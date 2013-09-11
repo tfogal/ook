@@ -1,7 +1,10 @@
+#define _POSIX_C_SOURCE 200112L
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include "ook.h"
 
 static void*
@@ -174,15 +177,60 @@ compatible(struct OokFile* f1, struct OokFile* f2)
   return true;
 }
 
-int
-main(int argc, char* argv[])
+/* filenames which will give the input to the program. */
+static char* input[2] = {NULL, NULL};
+/* filename of the output file we will generate. */
+static char* output = NULL;
+/* verbosity of output.  0 (the default) is terse. */
+static uint16_t verbose = 0U;
+
+static char*
+tjfstrdup(const char* str)
 {
-  if(argc != 3) {
-    return 0;
+  const size_t n = strlen(str);
+  char* rv = xmalloc(n + 1);
+  return strncpy(rv, str, n+1);
+}
+
+/* sets global variables (options) based on command line options.
+ * allocates 'input' and 'output'. */
+static void
+parseopt(int argc, char* const argv[])
+{
+  int opt;
+  while((opt = getopt(argc, argv, "i:o:v")) != -1) {
+    switch(opt) {
+      case 'i': {
+        const size_t idx = input[0] == NULL ? 0 : 1;
+        if(input[idx] != NULL) {
+          fprintf(stderr, "Max two inputs! '%s' is too many.\n", optarg);
+          exit(EXIT_FAILURE);
+        }
+        input[idx] = tjfstrdup(optarg);
+      } break;
+      case 'o':
+        if(output != NULL) { free(output); output = NULL; }
+        output = tjfstrdup(optarg);
+        break;
+      case 'v':
+        verbose++;
+        break;
+      default:
+				fprintf(stderr, "Usage: %s -i <filename> -i <filename> -o <filename>"
+                " [-v]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
   }
-  struct OokFile* f1 = ookread(argv[1]);
+}
+
+int
+main(int argc, char* const argv[])
+{
+  parseopt(argc, argv);
+
+  struct OokFile* f1 = ookread(input[0]);
   if(!f1) { perror("open"); exit(EXIT_FAILURE); }
-  struct OokFile* f2 = ookread(argv[2]);
+  struct OokFile* f2 = ookread(input[1]);
   if(!f2) { perror("open"); exit(EXIT_FAILURE); }
 
   if(!ookinit()) {
@@ -207,17 +255,17 @@ main(int argc, char* argv[])
     ookwidth(f2) * ookcomponents(f2) * bsize[0]*bsize[1]*bsize[2]
   };
   void* data[2] = { xmalloc(bytes_brick[0]), xmalloc(bytes_brick[1]) };
-  float* output = xmalloc(sizeof(float) * ookcomponents(f1) *
-                          bsize[0]*bsize[1]*bsize[2]);
+  float* outdata = xmalloc(sizeof(float) * ookcomponents(f1) *
+                           bsize[0]*bsize[1]*bsize[2]);
 
   uint64_t dims[3];
   ookdimensions(f1, dims);
 
-  struct OokFile* fout = ookcreate("output", bsize, dims, OOK_FLOAT,
+  struct OokFile* fout = ookcreate(output, bsize, dims, OOK_FLOAT,
                                    ookcomponents(f1));
   if(!fout) {
     perror("open");
-    free(output);
+    free(outdata);
     free(data[0]); free(data[1]);
     ookclose(f1); ookclose(f2);
     return EXIT_FAILURE;
@@ -243,12 +291,15 @@ main(int argc, char* argv[])
     ookbricksize(f1, brick, bs);
     ookbrick(f1, brick, &data[0]);
     ookbrick(f2, brick, &data[1]);
-    fqn(data[0], data[1], output, bs[0]*bs[1]*bs[2]);
-    ookbrickout(fout, brick, output, bsize[0]*bsize[1]*bsize[2]);
+    fqn(data[0], data[1], outdata, bs[0]*bs[1]*bs[2]);
+    ookbrickout(fout, brick, outdata, bsize[0]*bsize[1]*bsize[2]);
   }
 
   free(data[0]);
   free(data[1]);
+  free(outdata);
+  free(input[0]);
+  free(input[1]);
   free(output);
   ookclose(f1);
   ookclose(f2);
