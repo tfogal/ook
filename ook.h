@@ -5,28 +5,33 @@ extern "C" {
 #include <stdbool.h>
 #include <stdio.h>
 
-bool ook_init();
-size_t ook_bricks(FILE*);
-void ook_max_brick_size(FILE*, size_t[3]);
-size_t ook_width(FILE*);
-size_t ook_components(FILE*);
-bool ook_signed(FILE*);
+struct OokFile;
+
+bool ookinit();
+struct OokFile* ookread(const char*);
+
+size_t ookbricks(const struct OokFile*);
+void ookmaxbricksize(const struct OokFile*, size_t[3]);
+size_t ookwidth(const struct OokFile*);
+size_t ookcomponents(const struct OokFile*);
+bool ooksigned(const struct OokFile*);
 
 enum OOKTYPE { OOK_I8,OOK_U8, OOK_I16,OOK_U16, OOK_I32,OOK_U32,
                OOK_I64,OOK_U64, OOK_FLOAT, OOK_DOUBLE };
 
-enum OOKTYPE ook_type(FILE*);
+enum OOKTYPE ooktype(const struct OokFile*);
 
-void ook_brick(FILE*, size_t id, void* data);
-void ook_dimensions(FILE*, uint64_t[3]);
+void ookbrick(struct OokFile*, size_t id, void* data);
+void ookdimensions(struct OokFile*, uint64_t[3]);
 
-struct OokFile;
 struct OokFile*
-ook_new(const char* filename, const size_t bsize[3], const uint64_t dims[3],
-        enum OOKTYPE, size_t components);
+ookcreate(const char* filename, const size_t bsize[3], const uint64_t dims[3],
+          enum OOKTYPE, size_t components);
 
-void ook_brick_size(FILE*, size_t id, size_t bsize[3]);
-void ook_brick_out(struct OokFile*, size_t id, void*, size_t n);
+void ookbricksize(struct OokFile*, size_t id, size_t bsize[3]);
+void ookbrickout(struct OokFile*, size_t id, void*, size_t n);
+
+int ookclose(struct OokFile*);
 
 #ifdef __cplusplus
 }

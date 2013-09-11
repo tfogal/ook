@@ -128,36 +128,36 @@ adddouble(const void* v1, const void* v2, void* out, const size_t n)
 /* ensures the two files given can be combined, as per the rules of this
  * program.  this generally means that the data are registered. */
 static bool
-compatible(FILE* f1, FILE* f2)
+compatible(struct OokFile* f1, struct OokFile* f2)
 {
-  if(ook_bricks(f1) != ook_bricks(f2) ||
-     ook_components(f1) != ook_components(f2) ||
-     ook_signed(f1) != ook_signed(f2)) {
+  if(ookbricks(f1) != ookbricks(f2) ||
+     ookcomponents(f1) != ookcomponents(f2) ||
+     ooksigned(f1) != ooksigned(f2)) {
     return false;
   }
 
   size_t bsize[2][3];
-  ook_max_brick_size(f1, bsize[0]);
-	ook_max_brick_size(f2, bsize[1]);
+  ookmaxbricksize(f1, bsize[0]);
+	ookmaxbricksize(f2, bsize[1]);
   if(bsize[0][0] != bsize[1][0] ||
      bsize[0][1] != bsize[1][1] ||
      bsize[0][2] != bsize[1][2]) {
     return false;
 	}
 
-  const enum OOKTYPE type[2] = { ook_type(f1), ook_type(f2) };
+  const enum OOKTYPE type[2] = { ooktype(f1), ooktype(f2) };
   if(type[0] != type[1]) {
     return false;
   }
 
   /* our processing functions are currently broken, assume 1-component data */
-  if(ook_components(f1) != 1) {
+  if(ookcomponents(f1) != 1) {
     return false;
   }
 
   uint64_t dims[2][3];
-  ook_dimensions(f1, dims[0]);
-  ook_dimensions(f2, dims[1]);
+  ookdimensions(f1, dims[0]);
+  ookdimensions(f2, dims[1]);
   if(dims[0][0] != dims[1][0] ||
      dims[0][1] != dims[1][1] ||
      dims[0][2] != dims[1][2]) {
@@ -166,7 +166,7 @@ compatible(FILE* f1, FILE* f2)
 
   /* we should remove this restriction at some point, but again our processing
    * functions are nonsense. */
-  const bool sgned[2] = { ook_signed(f1), ook_signed(f2) };
+  const bool sgned[2] = { ooksigned(f1), ooksigned(f2) };
   if(sgned[0] != sgned[1]) {
     return false;
   }
@@ -180,46 +180,46 @@ main(int argc, char* argv[])
   if(argc != 3) {
     return 0;
   }
-  FILE* f1 = fopen(argv[1], "r");
+  struct OokFile* f1 = ookread(argv[1]);
   if(!f1) { perror("open"); exit(EXIT_FAILURE); }
-  FILE* f2 = fopen(argv[2], "r");
+  struct OokFile* f2 = ookread(argv[2]);
   if(!f2) { perror("open"); exit(EXIT_FAILURE); }
 
-  if(!ook_init()) {
-    fclose(f1); fclose(f2);
+  if(!ookinit()) {
+    ookclose(f1); ookclose(f2);
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
 
   if(!compatible(f1, f2)) {
     fprintf(stderr, "Data not registered.\n");
-    fclose(f1); fclose(f2);
+    ookclose(f1); ookclose(f2);
     exit(EXIT_FAILURE);
   }
 
   size_t bsize[3];
-  ook_max_brick_size(f1, bsize);
+  ookmaxbricksize(f1, bsize);
 
-  const enum OOKTYPE type[2] = { ook_type(f1), ook_type(f2) };
+  const enum OOKTYPE type[2] = { ooktype(f1), ooktype(f2) };
 
   const size_t bytes_brick[2] = {
-    ook_width(f1) * ook_components(f1) * bsize[0]*bsize[1]*bsize[2],
-    ook_width(f2) * ook_components(f2) * bsize[0]*bsize[1]*bsize[2]
+    ookwidth(f1) * ookcomponents(f1) * bsize[0]*bsize[1]*bsize[2],
+    ookwidth(f2) * ookcomponents(f2) * bsize[0]*bsize[1]*bsize[2]
   };
   void* data[2] = { xmalloc(bytes_brick[0]), xmalloc(bytes_brick[1]) };
-  float* output = xmalloc(sizeof(float) * ook_components(f1) *
+  float* output = xmalloc(sizeof(float) * ookcomponents(f1) *
                           bsize[0]*bsize[1]*bsize[2]);
 
   uint64_t dims[3];
-  ook_dimensions(f1, dims);
+  ookdimensions(f1, dims);
 
-  struct OokFile* fout = ook_new("output", bsize, dims, OOK_FLOAT,
-                                 ook_components(f1));
+  struct OokFile* fout = ookcreate("output", bsize, dims, OOK_FLOAT,
+                                   ookcomponents(f1));
   if(!fout) {
     perror("open");
     free(output);
     free(data[0]); free(data[1]);
-    fclose(f1); fclose(f2);
+    ookclose(f1); ookclose(f2);
     return EXIT_FAILURE;
   }
 
@@ -238,16 +238,18 @@ main(int argc, char* argv[])
     case OOK_DOUBLE: fqn = adddouble; break;
   }
 
-  for(size_t brick=0; brick < ook_bricks(f1); ++brick) {
+  for(size_t brick=0; brick < ookbricks(f1); ++brick) {
     size_t bs[3];
-    ook_brick_size(f1, brick, bs);
-    ook_brick(f1, brick, &data[0]);
-    ook_brick(f2, brick, &data[1]);
+    ookbricksize(f1, brick, bs);
+    ookbrick(f1, brick, &data[0]);
+    ookbrick(f2, brick, &data[1]);
     fqn(data[0], data[1], output, bs[0]*bs[1]*bs[2]);
-    ook_brick_out(fout, brick, output, bsize[0]*bsize[1]*bsize[2]);
+    ookbrickout(fout, brick, output, bsize[0]*bsize[1]*bsize[2]);
   }
 
   free(data[0]);
   free(data[1]);
   free(output);
+  ookclose(f1);
+  ookclose(f2);
 }
