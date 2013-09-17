@@ -131,11 +131,9 @@ adddouble(const void* v1, const void* v2, void* out, const size_t n)
 /* ensures the two files given can be combined, as per the rules of this
  * program.  this generally means that the data are registered. */
 static bool
-compatible(struct OokFile* f1, struct OokFile* f2)
+compatible(struct ookfile* f1, struct ookfile* f2)
 {
-  if(ookbricks(f1) != ookbricks(f2) ||
-     ookcomponents(f1) != ookcomponents(f2) ||
-     ooksigned(f1) != ooksigned(f2)) {
+  if(ookbricks(f1) != ookbricks(f2)) {
     return false;
   }
 
@@ -148,29 +146,12 @@ compatible(struct OokFile* f1, struct OokFile* f2)
     return false;
 	}
 
-  const enum OOKTYPE type[2] = { ooktype(f1), ooktype(f2) };
-  if(type[0] != type[1]) {
-    return false;
-  }
-
-  /* our processing functions are currently broken, assume 1-component data */
-  if(ookcomponents(f1) != 1) {
-    return false;
-  }
-
   uint64_t dims[2][3];
   ookdimensions(f1, dims[0]);
   ookdimensions(f2, dims[1]);
   if(dims[0][0] != dims[1][0] ||
      dims[0][1] != dims[1][1] ||
      dims[0][2] != dims[1][2]) {
-    return false;
-  }
-
-  /* we should remove this restriction at some point, but again our processing
-   * functions are nonsense. */
-  const bool sgned[2] = { ooksigned(f1), ooksigned(f2) };
-  if(sgned[0] != sgned[1]) {
     return false;
   }
 
@@ -228,16 +209,17 @@ main(int argc, char* const argv[])
 {
   parseopt(argc, argv);
 
-  struct OokFile* f1 = ookread(input[0]);
-  if(!f1) { perror("open"); exit(EXIT_FAILURE); }
-  struct OokFile* f2 = ookread(input[1]);
-  if(!f2) { perror("open"); exit(EXIT_FAILURE); }
-
-  if(!ookinit()) {
-    ookclose(f1); ookclose(f2);
+  if(!ookinit(stdc_reader)) {
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
+  const uint64_t volumesize[3] = { 2025, 1600, 400 };
+  const uint64_t bricksize[3] = { 405, 320, 80 };
+
+  struct ookfile* f1 = ookread(input[0], volumesize, bricksize);
+  if(!f1) { perror("open"); exit(EXIT_FAILURE); }
+  struct ookfile* f2 = ookread(input[1], volumesize, bricksize);
+  if(!f2) { perror("open"); exit(EXIT_FAILURE); }
 
   if(!compatible(f1, f2)) {
     fprintf(stderr, "Data not registered.\n");
@@ -248,21 +230,20 @@ main(int argc, char* const argv[])
   size_t bsize[3];
   ookmaxbricksize(f1, bsize);
 
-  const enum OOKTYPE type[2] = { ooktype(f1), ooktype(f2) };
+  const size_t components = 1;
 
   const size_t bytes_brick[2] = {
-    ookwidth(f1) * ookcomponents(f1) * bsize[0]*bsize[1]*bsize[2],
-    ookwidth(f2) * ookcomponents(f2) * bsize[0]*bsize[1]*bsize[2]
+    sizeof(uint16_t) * components * bsize[0]*bsize[1]*bsize[2],
+    sizeof(uint16_t) * components * bsize[0]*bsize[1]*bsize[2],
   };
   void* data[2] = { xmalloc(bytes_brick[0]), xmalloc(bytes_brick[1]) };
-  float* outdata = xmalloc(sizeof(float) * ookcomponents(f1) *
+  float* outdata = xmalloc(sizeof(float) * components *
                            bsize[0]*bsize[1]*bsize[2]);
 
   uint64_t dims[3];
   ookdimensions(f1, dims);
 
-  struct OokFile* fout = ookcreate(output, bsize, dims, OOK_FLOAT,
-                                   ookcomponents(f1));
+  struct ookfile* fout = ookcreate(output, dims, bsize, OOK_FLOAT, components);
   if(!fout) {
     perror("open");
     free(outdata);
@@ -270,10 +251,11 @@ main(int argc, char* const argv[])
     ookclose(f1); ookclose(f2);
     return EXIT_FAILURE;
   }
+  const enum OOKTYPE type = OOK_U16;
 
   typedef void (t_func_apply)(const void*, const void*, void*, const size_t);
   t_func_apply* fqn;
-  switch(type[0]) {
+  switch(type) {
     case OOK_I8: fqn = addi8; break;
     case OOK_U8: fqn = addu8; break;
     case OOK_I16: fqn = addi16; break;
@@ -292,7 +274,7 @@ main(int argc, char* const argv[])
     ookbrick(f1, brick, &data[0]);
     ookbrick(f2, brick, &data[1]);
     fqn(data[0], data[1], outdata, bs[0]*bs[1]*bs[2]);
-    ookbrickout(fout, brick, outdata, bsize[0]*bsize[1]*bsize[2]);
+    ookwrite(fout, brick, outdata, bsize[0]*bsize[1]*bsize[2]);
   }
 
   free(data[0]);
