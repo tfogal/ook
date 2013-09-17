@@ -209,7 +209,7 @@ main(int argc, char* const argv[])
 {
   parseopt(argc, argv);
 
-  if(!ookinit(stdc_reader)) {
+  if(!ookinit(StdCIO)) {
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
@@ -239,7 +239,6 @@ main(int argc, char* const argv[])
   void* data[2] = { xmalloc(bytes_brick[0]), xmalloc(bytes_brick[1]) };
   float* outdata = xmalloc(sizeof(float) * components *
                            bsize[0]*bsize[1]*bsize[2]);
-
   uint64_t dims[3];
   ookdimensions(f1, dims);
 
