@@ -1,0 +1,5 @@
+{
+  global: ookinit; ookread; ookbricks; ookmaxbricksize; ookbrick;
+          ookdimensions; ookcreate; ookbricksize; ookwrite; ookclose; StdCIO;
+  local: *;
+};
