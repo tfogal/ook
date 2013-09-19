@@ -44,5 +44,6 @@ stdc_close(void* fd)
 struct io StdCIO = {
   .open = stdc_open,
   .read = stdc_read,
-  .close = stdc_close
+  .close = stdc_close,
+  .preallocate = NULL
 };

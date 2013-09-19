@@ -202,6 +202,18 @@ parseopt(int argc, char* const argv[])
         exit(EXIT_FAILURE);
     }
   }
+  if(NULL == input[0]) {
+    fprintf(stderr, "No input files given!\n");
+    exit(EXIT_FAILURE);
+  }
+  if(NULL == input[1]) {
+    fprintf(stderr, "Need two input files!\n");
+    exit(EXIT_FAILURE);
+  }
+  if(NULL == output) {
+    fprintf(stderr, "Output file needed.\n");
+    exit(EXIT_FAILURE);
+  }
 }
 
 int
@@ -216,9 +228,9 @@ main(int argc, char* const argv[])
   const uint64_t volumesize[3] = { 2025, 1600, 400 };
   const uint64_t bricksize[3] = { 405, 320, 80 };
 
-  struct ookfile* f1 = ookread(input[0], volumesize, bricksize);
+  struct ookfile* f1 = ookread(input[0], volumesize, bricksize, OOK_U16, 1);
   if(!f1) { perror("open"); exit(EXIT_FAILURE); }
-  struct ookfile* f2 = ookread(input[1], volumesize, bricksize);
+  struct ookfile* f2 = ookread(input[1], volumesize, bricksize, OOK_U8, 1);
   if(!f2) { perror("open"); exit(EXIT_FAILURE); }
 
   if(!compatible(f1, f2)) {
