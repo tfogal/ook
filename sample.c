@@ -285,7 +285,7 @@ main(int argc, char* const argv[])
     ookbrick(f1, brick, &data[0]);
     ookbrick(f2, brick, &data[1]);
     fqn(data[0], data[1], outdata, bs[0]*bs[1]*bs[2]);
-    ookwrite(fout, brick, outdata, bsize[0]*bsize[1]*bsize[2]);
+    ookwrite(fout, brick, outdata);
   }
 
   free(data[0]);

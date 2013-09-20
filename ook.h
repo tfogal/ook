@@ -34,7 +34,7 @@ ookcreate(const char* filename, const uint64_t dims[3], const size_t bsize[3],
           enum OOKTYPE, size_t components);
 
 void ookbricksize(struct ookfile*, const size_t id, size_t bsize[3]);
-void ookwrite(struct ookfile*, const size_t id, const void*, size_t n);
+void ookwrite(struct ookfile*, const size_t id, const void*);
 
 int ookclose(struct ookfile*);
 
