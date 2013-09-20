@@ -1,6 +1,5 @@
 #ifndef OOK_IO_INTERFACE_H
 #define OOK_IO_INTERFACE_H
-
 /* IO Interfaces used in Ook.  These are abstractions over an idea such as
  * reading or writing data. */
 
@@ -40,7 +39,9 @@ typedef int (closer)(void* fd);
 
 /** A prealloc function preallocates the given amount of space in the file.
  * This is useful for keeping file data contiguous, even when writes are
- * scattered. */
+ * scattered.
+ * @note This function is optional; set it to NULL if your interface cannot
+ *       support it. */
 typedef void (prealloc)(void*, off_t len);
 
 extern reader* stdc_reader;
