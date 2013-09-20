@@ -169,7 +169,9 @@ ookwrite(struct ookfile* of, const size_t id, const void* from)
 int
 ookclose(struct ookfile* of)
 {
-  return iop.close(of->fd);
+  int errcode = iop.close(of->fd);
+  free(of);
+  return errcode;
 }
 
 /* returns the brick layout (number of bricks per dimension) for the given
