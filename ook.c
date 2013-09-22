@@ -23,11 +23,21 @@ struct io iop;
 static int test();
 #endif
 
+#ifdef __GNUC__
+#  define CONST __attribute__((const))
+#  define MALLOC __attribute__((malloc))
+#  define PURE __attribute__((pure))
+#else
+#  define CONST /* no const function support */
+#  define MALLOC /* no malloc function support */
+#  define PURE /* no pure function support */
+#endif
+
 /* returns the brick layout (number of bricks per dimension) for the given
  * file. */
 static void blayout(const struct ookfile* of, size_t nbricks[3]);
 /** @return the number of bytes a given type needs. */
-static size_t width(enum OOKTYPE t);
+PURE static size_t width(enum OOKTYPE t);
 /** converts brick 1D ID to 3D ID.
  * @param id the 1-dimensional brick ID
  * @param layout the layout of bricks in the dataset (# bricks per dim)
@@ -188,7 +198,7 @@ blayout(const struct ookfile* of, size_t nbricks[3])
 }
 
 /** @return the number of bytes a given type needs. */
-static size_t
+PURE static size_t
 width(enum OOKTYPE t)
 {
   switch(t) {
@@ -222,6 +232,54 @@ bidxto3d(const size_t id, const size_t layout[3], size_t brick[3])
   assert(brick[0] < layout[0]);
   assert(brick[1] < layout[1]);
   assert(brick[2] < layout[2]);
+}
+
+/** identifies the location of data within the larger set, and moves data
+ * between the two places. */
+static void
+srcop(rwop* op, struct ookfile* of, size_t id, void* buffer)
+{
+  size_t bsize[3];
+  ookbricksize(of, id, bsize);
+
+  size_t layout[3];
+  blayout(of, layout);
+  size_t brickid[3];
+  bidxto3d(id, layout, brickid);
+
+  /* just for typing convenience: */
+  const uint64_t vol[3] = { of->volsize[0], of->volsize[1], of->volsize[2] };
+
+  const size_t bricks_per_source[3] = {
+    vol[0] / of->bricksize[0],
+    vol[1] / of->bricksize[1],
+    vol[2] / of->bricksize[2],
+  };
+  size_t src_offset[3] = {
+    (brickid[0] % bricks_per_source[0]) * of->bricksize[0],
+    (brickid[1] % bricks_per_source[1]) * of->bricksize[1],
+    (brickid[2] % bricks_per_source[2]) * of->bricksize[2],
+  };
+  const size_t original_src_offset[3] = {
+    src_offset[0], src_offset[1], src_offset[2]
+  };
+
+  /* our copy size/scanline size is the width of our target brick. */
+	const size_t scanline = bsize[0] * of->components * width(of->type);
+  for(size_t z=0; z < bsize[2]; ++z) {
+    for(size_t y=0; y < bsize[1]; ++y) {
+      const off_t tgt_offs = (z*bsize[1]*bsize[0] + y*bsize[0] + 0) *
+                             of->components * width(of->type);
+      const off_t src_offs = (src_offset[0]*vol[1]*vol[0] + 
+                              src_offset[1]*vol[0] + src_offset[0]) *
+                             of->components * width(of->type);
+      int errcode = op(of->fd, src_offs, scanline, buffer+tgt_offs); /* copy */
+      if(errcode != 0) { errno = errcode; return; }
+      src_offset[1]++; /* follows y's increment.. */
+    }
+    src_offset[1] = original_src_offset[1];
+    src_offset[2]++;
+  }
 }
 
 #ifndef NDEBUG
@@ -288,57 +346,3 @@ test()
   return 1;
 }
 #endif
-
-/** identifies the location of data within the larger set, and moves data
- * between the two places. */
-static void
-srcop(rwop* op, struct ookfile* of, size_t id, void* buffer)
-{
-  size_t bsize[3];
-  ookbricksize(of, id, bsize);
-
-  size_t layout[3];
-  blayout(of, layout);
-  size_t brickid[3];
-  bidxto3d(id, layout, brickid);
-
-  /* just for typing convenience: */
-  const uint64_t vol[3] = { of->volsize[0], of->volsize[1], of->volsize[2] };
-
-  /* of->bricksize[0]*layout[0] is not vol[0]!  the last brick in a dimension
-   * can be partial.
-   * +------------------+------------+
-   * |                  |            |  this is vol[0] wide
-   * | of->bricksize[0] |            |  the second brick here is less than
-   * |                  |            |   of->bricksize[0] wide! (last brick)
-   * +------------------+------------+
-   *          of->bricksize[1] tall
-   * since there is only one brick in Y, of->bricksize[1] == vol[1]. */
-
-  /* each scanline begins (brickid[0]*of->bricksize[0]) voxels in. */
-  const off_t indent = brickid[0] * of->bricksize[0];
-
-  /* After each scanline, we need to skip (the total length of the scanline,
-   * minus the scanline of the brick we copied, minus where we began, so that
-   * we can reposition ourselves at the next scanline. */
-  const off_t skip_x = vol[0] - indent - bsize[0];
-  /* After a plane, we need to skip to the brick's start in the next plane. */
-  const off_t skip_yz = brickid[2]*vol[0]*vol[1] + brickid[1]*vol[0];
-
-  /* "source" offsets refer to the file's data; "target" offsets refer to the
-   * memory we're copying into/from.  That is, "source" is the raw data,
-   * "target" is the brick. */
-  off_t off_tgt = 0; /* tightly packed target memory. */
-  off_t off_src = skip_yz + indent;
-
-  /* now do the copies.  we copy a scanline at a time, so it's 2D looping. */
-  for(size_t z=0; z < bsize[2]; ++z) {
-    for(size_t y=0; y < bsize[1]; ++y) {
-      int errcode = op(of->fd, off_src, bsize[0], buffer+off_tgt);
-      if(errcode != 0) { errno = errcode; return; }
-      off_tgt += bsize[0] * width(of->type) * of->components;
-      off_src += (skip_x + indent) * width(of->type) * of->components;
-    }
-    off_src += skip_yz * width(of->type) * of->components;
-  }
-}
