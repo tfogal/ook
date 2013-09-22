@@ -31,6 +31,19 @@ stdc_read(void* fd, const off_t offset, const size_t len, void* buf)
   return 0;
 }
 
+static int
+stdc_write(void* fd, const off_t offset, const size_t len, const void* buf)
+{
+  FILE* fp = (FILE*) fd;
+  if(fseek(fp, offset, SEEK_SET) != 0) {
+    return errno;
+  }
+  if(fwrite(buf, 1, len, fp) != len) {
+    return errno;
+  }
+  return 0;
+}
+
 int
 stdc_close(void* fd)
 {
@@ -44,7 +57,7 @@ stdc_close(void* fd)
 struct io StdCIO = {
   .open = stdc_open,
   .read = stdc_read,
-  .write = NULL,
+  .write = stdc_write,
   .close = stdc_close,
   .preallocate = NULL
 };
