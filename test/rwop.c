@@ -161,6 +161,7 @@ START_TEST(simple_verify)
       }
     }
   }
+  free(data);
 }
 END_TEST
 
