@@ -1,7 +1,10 @@
 #ifndef OOK_IO_INTERFACE_H
 #define OOK_IO_INTERFACE_H
-/* IO Interfaces used in Ook.  These are abstractions over an idea such as
- * reading or writing data. */
+/** IO Interfaces used in Ook.  These are abstractions over an idea such as
+ * reading or writing data.
+ * @note These interfaces are byte-oriented.  Ook will internally handle all the
+ * conversions to ensure the number of components and field width is taken
+ * care of appropriately. */
 
 /** The opener interface provides 'open' semantics.
  * It opens the given file in the given mode.  The identifier returned is
@@ -16,6 +19,8 @@ typedef void* (opener)(const char* fn, const enum OOKMODE);
 /** The reader interface wraps basic 'read' operations.
  * It needs a 'descriptor', offset and length.  It reads into the given buffer.
  * @param fd is the descriptor returned from the 'open' interface.
+ * @param offset *byte* offset into the stream.
+ * @param len number of *bytes* to read.
  * @note ook's reader interface is defined to be atomic: it cannot return a
  * partial read (implementations should instead return an error).
  * @returns 0 on success, an error code (l.t. 0) on error. */
