@@ -265,15 +265,15 @@ srcop(rwop* op, struct ookfile* of, size_t id, void* buffer)
     src_offset[0], src_offset[1], src_offset[2]
   };
 
+  const size_t c = of->components; /* convenience */
+  const size_t w = width(of->type); /* convenience */
   /* our copy size/scanline size is the width of our target brick. */
-	const size_t scanline = bsize[0] * of->components * width(of->type);
+  const size_t scanline = bsize[0] * c * w;
   for(size_t z=0; z < bsize[2]; ++z) {
     for(size_t y=0; y < bsize[1]; ++y) {
-      const off_t tgt_offs = (z*bsize[1]*bsize[0] + y*bsize[0] + 0) *
-                             of->components * width(of->type);
-      const off_t src_offs = (src_offset[0]*vol[1]*vol[0] + 
-                              src_offset[1]*vol[0] + src_offset[0]) *
-                             of->components * width(of->type);
+      const off_t tgt_offs = (z*bsize[1]*bsize[0] + y*bsize[0] + 0) * c * w;
+      const off_t src_offs = (src_offset[0]*vol[1]*vol[0] +
+                              src_offset[1]*vol[0] + src_offset[0]) * c * w;
       int errcode = op(of->fd, src_offs, scanline, buffer+tgt_offs); /* copy */
       if(errcode != 0) { errno = errcode; return; }
       src_offset[1]++; /* follows y's increment.. */
