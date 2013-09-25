@@ -83,9 +83,9 @@ print_function(const size_t bsize[3])
       printf(": ");
       for(size_t x=0; x < bsize[0]*2; ++x) {
         if((x % 2) == 1) {
-          printf("%5hu ", value(x,y,z) % 16);
+          printf("%5u ", value(x,y,z) % 16);
         } else {
-          printf("%5hu ", value(x,y,z));
+          printf("%5u ", value(x,y,z));
         }
       }
       printf(":\n");
