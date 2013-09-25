@@ -59,6 +59,8 @@ struct io {
   prealloc* preallocate;
 };
 extern struct io StdCIO;
+/** The _debug version prints out details of what it does. */
+extern struct io StdCIO_debug;
 extern struct io MappedIO;
 
 #endif
