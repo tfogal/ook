@@ -2,11 +2,10 @@
  *    ./threshold -i volume.raw -o out.raw -t i16 -x 128 -y 96 -z 84
  * reads: 'volume.raw'
  * outputs: 'out.raw'
- * assumes: input is 16bit signed integers
- * assumes: input volume is 128x96x84 elements.
  * assumes: single-component data. */
 #define _POSIX_C_SOURCE 200112L
 #include <assert.h>
+#include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -26,6 +25,8 @@ static char* output = NULL;
 static enum OOKTYPE itype = OOK_I8;
 /* verbosity of output.  0 (the default) is terse. */
 static uint16_t verbose = 0U;
+/* threshold to utilize */
+static double threshold[2] = { -FLT_MAX, FLT_MAX };
 
 /* allocation that succeeds or dies. */
 static void* xmalloc(const size_t bytes);
@@ -33,30 +34,71 @@ static void* xmalloc(const size_t bytes);
 static char* tjfstrdup(const char* str);
 /* identifies the appropriate ook type from a string representation of it. */
 static enum OOKTYPE strtotype(const char*);
+static size_t bytewidth(const enum OOKTYPE);
 
 static void
 usage(const char* progname)
 {
   printf(
 "Usage: %s -i input.raw -t type -x <uint> -y <uint> -z <uint> -o out.raw\n\n"
-"\t-i  input volume to read.  only raw data supported.\n"
-"\t-t  type of input volume.  i8,u8,i16,u16,i32,u32,i64,u64,f,d\n"
-"\t-x  number of voxels of input (and output) volume, in X dimension.\n"
+"\t-i  input volume to read.  only raw data are supported.\n"
+"\t-t  type of input volume. one of: i8,u8,i16,u16,i32,u32,i64,u64,f,d\n"
+"\t-x  number of voxels in input (and output) volume, in X dimension.\n"
 "\t-y  ditto, for Y dimension\n"
 "\t-z  ditto, for Z dimension\n"
+"\t-m  minimum value to threshold with [default=%f]\n"
+"\t-M  maximum value to threshold with [default=%f]\n"
 "\t-o  output volume to create.  always creates a raw uint8 volume.\n\n"
 "Type names are generally 'i' for integer, 'u' for unsigned integer, "
 "followed by the byte width of the type.  The special types 'f' and 'd' "
 "stand for 'float' and 'double', respectively.\n",
-  progname);
+  progname, threshold[0], threshold[1]);
 }
+
+static void
+threshi8(const void* vol, void* out, const size_t n)
+{
+  const int8_t* ivol = (const int8_t*)vol;
+  uint8_t* o = (uint8_t*)out;
+  for(size_t i=0; i < n; ++i) {
+    o[i] = (threshold[0] <= ivol[i] && threshold[1] <= ivol[i]);
+  }
+}
+static void
+threshu8(const void* vol, void* out, const size_t n)
+{
+  const uint8_t* ivol = (const uint8_t*)vol;
+  uint8_t* o = (uint8_t*)out;
+  for(size_t i=0; i < n; ++i) {
+    o[i] = (threshold[0] <= ivol[i] && threshold[1] <= ivol[i]);
+  }
+}
+static void
+threshi16(const void* vol, void* out, const size_t n)
+{
+  const int16_t* ivol = (const int16_t*)vol;
+  uint8_t* o = (uint8_t*)out;
+  for(size_t i=0; i < n; ++i) {
+    o[i] = (threshold[0] <= ivol[i] && threshold[1] <= ivol[i]);
+  }
+}
+static void
+threshu16(const void* vol, void* out, const size_t n)
+{
+  const uint16_t* ivol = (const uint16_t*)vol;
+  uint8_t* o = (uint8_t*)out;
+  for(size_t i=0; i < n; ++i) {
+    o[i] = (threshold[0] <= ivol[i] && threshold[1] <= ivol[i]);
+  }
+}
+
 /* sets global variables (options) based on command line options.
  * allocates 'input' and 'output'. */
 static void
 parseopt(int argc, char* const argv[])
 {
   int opt;
-  while((opt = getopt(argc, argv, "i:o:t:x:y:z:v")) != -1) {
+  while((opt = getopt(argc, argv, "i:o:t:x:y:z:m:M:vh")) != -1) {
     switch(opt) {
       case 'i':
         if(input != NULL) { free(input); input = NULL; }
@@ -72,9 +114,12 @@ parseopt(int argc, char* const argv[])
       case 'x': vol[0] = (uint64_t)atoll(optarg); break;
       case 'y': vol[1] = (uint64_t)atoll(optarg); break;
       case 'z': vol[2] = (uint64_t)atoll(optarg); break;
+      case 'm': threshold[0] = (double)atof(optarg); break;
+      case 'M': threshold[1] = (double)atof(optarg); break;
       case 'v':
         verbose++;
         break;
+      case 'h': /* FALL-THROUGH */
       default:
         usage(argv[0]);
         exit(EXIT_FAILURE);
@@ -101,7 +146,7 @@ main(int argc, char* const argv[])
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
-  const uint64_t bricksize[3] = { 128, 128, 128 };
+  const uint64_t bricksize[3] = { 64, 64, 64 };
 
   struct ookfile* fin = ookread(input, vol, bricksize, itype, 1);
   if(!fin) { perror("open"); exit(EXIT_FAILURE); }
@@ -112,7 +157,7 @@ main(int argc, char* const argv[])
   const size_t components = 1; /* our program assumes this.. */
 
   const size_t bytes_brick =
-    /*hack!*/ sizeof(uint16_t) * components * bsize[0]*bsize[1]*bsize[2];
+    bytewidth(itype) * components * bsize[0]*bsize[1]*bsize[2];
   void* data = xmalloc(bytes_brick);
   float* outdata = xmalloc(sizeof(uint8_t) * components *
                            bsize[0]*bsize[1]*bsize[2]);
@@ -125,14 +170,26 @@ main(int argc, char* const argv[])
     ookclose(fin);
     return EXIT_FAILURE;
   }
+  typedef void (t_func_apply)(const void*, void*, const size_t);
+  t_func_apply* fqn;
+  switch(itype) {
+    case OOK_I8: fqn = threshi8; break;
+    case OOK_U8: fqn = threshu8; break;
+    case OOK_I16: fqn = threshi16; break;
+    case OOK_U16: fqn = threshu16; break;
+    default: assert(false); fqn = NULL; break; /* FIXME! */
+  }
 
+  printf("\n");
   for(size_t brick=0; brick < ookbricks(fin); ++brick) {
     size_t bs[3];
     ookbricksize(fin, brick, bs);
-    ookbrick(fin, brick, &data);
-    /* fqn(data[0], data[1], outdata, bs[0]*bs[1]*bs[2]); */
+    ookbrick(fin, brick, data);
+    fqn(data, outdata, bs[0]*bs[1]*bs[2]);
     ookwrite(fout, brick, outdata);
+    printf("\rProcessed brick %5zu / %5zu...", brick, ookbricks(fin));
   }
+  printf("\n");
 
   free(data);
   free(outdata);
@@ -179,4 +236,19 @@ strtotype(const char* str)
   }
 	assert(false);
   return OOK_I8;
+}
+
+static size_t
+bytewidth(const enum OOKTYPE basictype)
+{
+  switch(basictype) {
+    case OOK_I8: case OOK_U8: return 1;
+    case OOK_I16: case OOK_U16: return 2;
+    case OOK_I32: case OOK_U32: return 4;
+    case OOK_I64: case OOK_U64: return 8;
+    case OOK_FLOAT: return 32;
+    case OOK_DOUBLE: return 32;
+  }
+  assert(false);
+  return 0;
 }
