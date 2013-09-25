@@ -124,6 +124,7 @@ teardown_multicomp()
 {
   ck_assert(ookclose(of) == 0);
   of = NULL; /* force memory being unreachable (for leak checking) */
+  remove(multifile);
 }
 
 START_TEST(multicomp_read)
