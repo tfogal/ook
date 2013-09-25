@@ -2,7 +2,7 @@ before_script:
   - sudo apt-get update -qq
   - sudo apt-get install -qq check
 language: c
-script: "make && (cd test/ && make)"
+script: "make && (cd test/ && make && ./suite)"
 compiler:
   - gcc
   - clang
