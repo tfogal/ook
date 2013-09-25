@@ -273,7 +273,7 @@ srcop(rwop* op, struct ookfile* of, size_t id, void* buffer)
   for(size_t z=0; z < bsize[2]; ++z) {
     for(size_t y=0; y < bsize[1]; ++y) {
       const off_t tgt_offs = (z*bsize[1]*bsize[0] + y*bsize[0] + 0) * c * w;
-      const off_t src_offs = (src_offset[0]*vol[1]*vol[0] +
+      const off_t src_offs = (src_offset[2]*vol[1]*vol[0] +
                               src_offset[1]*vol[0] + src_offset[0]) * c * w;
       int errcode = op(of->fd, src_offs, scanline, buffer+tgt_offs); /* copy */
       if(errcode != 0) { errno = errcode; return; }
