@@ -1,3 +1,5 @@
+#include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <check.h>
@@ -17,6 +19,7 @@
 static struct ookfile* zeroes;
 static const char* simplefile = ".testing";
 static const char* multifile = ".testing-multicomponent";
+static const char* towrite = ".simple-writetest";
 static struct ookfile* of;
 
 static void
@@ -258,6 +261,7 @@ teardown_simple()
 {
   ck_assert(ookclose(of) == 0);
   of = NULL; /* force memory being unreachable (for leak checking) */
+  remove(simplefile);
 }
 
 START_TEST(simple_verify)
@@ -289,6 +293,78 @@ START_TEST(simple_verify)
 }
 END_TEST
 
+static void
+setup_writer()
+{
+  ck_assert(ookinit(StdCIO));
+
+  const uint64_t vol[3] = { 4, 8, 12 };
+  const size_t bsize[3] = { 2, 4, 6 };
+  const size_t components = 1;
+  of = ookcreate(towrite, vol, bsize, OOK_FLOAT, components);
+  tjf_ck_ptr_ne(of, NULL);
+}
+
+static void
+teardown_writer()
+{
+  ck_assert(ookclose(of) == 0);
+  of = NULL; /* force memory being unreachable (for leak checking) */
+  remove(towrite);
+}
+
+START_TEST(writer_nothing)
+{
+  /* nothing.  basically just test ookcreate/ookclose. */
+}
+END_TEST
+
+static void
+is_value(const float* data, const size_t bsize[3])
+{
+  for(size_t z=0; z < bsize[2]; ++z) {
+    for(size_t y=0; y < bsize[1]; ++y) {
+      for(size_t x=0; x < bsize[0]; ++x) {
+        assert(data[z*bsize[1]*bsize[0] + y*bsize[0] + x] ==
+                  (float)value(x,y,z));
+        ck_assert(data[z*bsize[1]*bsize[0] + y*bsize[0] + x] ==
+                  (float)value(x,y,z));
+      }
+    }
+  }
+}
+
+START_TEST(writer_basic)
+{
+  const uint64_t vol[3] = { 4, 8, 12 };
+  const size_t bsize[3] = { 2, 4, 6 };
+  const size_t components = 1;
+
+  float* data = malloc(sizeof(float) * bsize[0]*bsize[1]*bsize[2] * components);
+  for(size_t z=0; z < bsize[2]; ++z) {
+    for(size_t y=0; y < bsize[1]; ++y) {
+      for(size_t x=0; x < bsize[0]; ++x) {
+        data[z*bsize[1]*bsize[0] + y*bsize[0] + x] = (float)value(x,y,z);
+      }
+    }
+  }
+  is_value(data, bsize);
+  errno = 0;
+  ookwrite(of, 0, data); ck_assert_int_eq(errno, 0);
+  ookwrite(of, 1, data); ck_assert_int_eq(errno, 0);
+  ookwrite(of, 2, data); ck_assert_int_eq(errno, 0);
+  ookwrite(of, 3, data); ck_assert_int_eq(errno, 0);
+  ck_assert(ookclose(of) == 0);
+
+  of = ookread(towrite, vol, bsize, OOK_FLOAT, components);
+  tjf_ck_ptr_ne(of, NULL);
+  ookbrick(of, 0, data);
+  is_value(data, bsize);
+
+  free(data); data = NULL;
+}
+END_TEST
+
 Suite*
 rwop_suite()
 {
@@ -299,14 +375,19 @@ rwop_suite()
   tcase_add_test(zero, zero_rw);
   TCase* simple = tcase_create("simple");
   tcase_add_test(simple, simple_verify);
+  TCase* writer = tcase_create("writer");
+  tcase_add_test(writer, writer_nothing);
+  tcase_add_test(writer, writer_basic);
   TCase* multicomp = tcase_create("multicomp");
   tcase_add_test(multicomp, multicomp_read);
 
   tcase_add_checked_fixture(zero, setup_zero, teardown_zero);
   tcase_add_checked_fixture(simple, setup_simple, teardown_simple);
   tcase_add_checked_fixture(multicomp, setup_multicomp, teardown_multicomp);
+  tcase_add_checked_fixture(writer, setup_writer, teardown_writer);
   suite_add_tcase(s, zero);
   suite_add_tcase(s, simple);
   suite_add_tcase(s, multicomp);
+  suite_add_tcase(s, writer);
   return s;
 }
