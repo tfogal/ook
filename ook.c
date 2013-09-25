@@ -140,6 +140,7 @@ ookcreate(const char* filename, const uint64_t dims[3], const size_t bsize[3],
   }
   memcpy(of->volsize, dims, sizeof(uint64_t)*3);
   memcpy(of->bricksize, bsize, sizeof(size_t)*3);
+  of->components = components;
 
   if(iop.preallocate) {
     const off_t sz = width(type) * components * dims[0]*dims[1]*dims[2];
