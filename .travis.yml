@@ -1,6 +1,8 @@
-before_install: sudo apt-get install check
+before_script:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq check
 language: c
-script: make
+script: "make && (cd test/ && make)"
 compiler:
   - gcc
   - clang
