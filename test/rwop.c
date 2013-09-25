@@ -83,9 +83,9 @@ print_function(const size_t bsize[3])
       printf(": ");
       for(size_t x=0; x < bsize[0]*2; ++x) {
         if((x % 2) == 1) {
-					printf("%5hu ", value(x,y,z) % 16);
+          printf("%5hu ", value(x,y,z) % 16);
         } else {
-					printf("%5hu ", value(x,y,z));
+          printf("%5hu ", value(x,y,z));
         }
       }
       printf(":\n");
@@ -104,8 +104,8 @@ setup_multicomp()
   for(size_t z=0; z < dims[2]; ++z) {
     for(size_t y=0; y < dims[1]; ++y) {
       for(size_t x=0; x < dims[0]*2; x+=2) {
-				data[x+0] = value(x,y,z);
-				data[x+1] = value(x,y,z) % 16;
+        data[x+0] = value(x,y,z);
+        data[x+1] = value(x,y,z) % 16;
       }
       fwrite(data, sizeof(uint16_t), dims[0]*2, fp);
     }
@@ -208,7 +208,7 @@ START_TEST(zero_all_bricks)
   ck_assert_int_eq(ookbricks(zeroes), 4U);
 
   for(size_t i=0; i < ookbricks(zeroes); ++i) {
-		memset(data, 1, bytes_brick); /* force the read to overwrite data */
+    memset(data, 1, bytes_brick); /* force the read to overwrite data */
     ookbrick(zeroes, i, data);
     /* verify every element is 0. */
     for(size_t j=0; j < bsize[0]*bsize[1]*bsize[2]; ++j) {
@@ -297,6 +297,7 @@ END_TEST
 static void
 setup_writer()
 {
+  srand(0xdeadbeef); /* always use same seed, for reproducibility */
   ck_assert(ookinit(StdCIO));
 
   const uint64_t vol[3] = { 4, 8, 12 };
@@ -320,6 +321,63 @@ START_TEST(writer_nothing)
 }
 END_TEST
 
+static uint64_t
+filesize(const char* filename)
+{
+  FILE* fp = fopen(filename, "rb");
+  if(!fp) { return 0; }
+  ck_assert(fseek(fp, 0, SEEK_END) == 0);
+  long sz = ftell(fp);
+  ck_assert_int_ne(sz, -1);
+  fclose(fp);
+  return (uint64_t)sz;
+}
+
+START_TEST(writer_threshold)
+{
+  const uint64_t vol[3] = { 4, 8, 12 };
+  const size_t bsize[3] = { 2, 4, 6 };
+  const size_t components = 1;
+  ck_assert_int_eq(ookbricks(of), 8);
+
+  float* data = malloc(sizeof(float) * bsize[0]*bsize[1]*bsize[2] * components);
+  tjf_ck_ptr_ne(data, NULL);
+  for(size_t brick=0; brick < ookbricks(of); ++brick) {
+    for(size_t z=0; z < bsize[2]; ++z) {
+      for(size_t y=0; y < bsize[1]; ++y) {
+        for(size_t x=0; x < bsize[0]; ++x) {
+          data[z*bsize[1]*bsize[0] + y*bsize[0] + x] = (float)rand() /
+                                                       (RAND_MAX/4.0);
+        }
+      }
+    }
+    errno=0;
+    ookwrite(of, brick, data);
+    ck_assert_int_eq(errno, 0);
+  }
+  ck_assert(ookclose(of) == 0);
+  of = ookread(towrite, vol, bsize, OOK_FLOAT, components);
+  tjf_ck_ptr_ne(of, NULL);
+  const char* thfile = ".threshold-test";
+  struct ookfile* fout = ookcreate(thfile, vol, bsize, OOK_U8,  components);
+  ck_assert_int_eq(ookbricks(fout), 8);
+  uint8_t* thresh = malloc(sizeof(uint8_t) * bsize[0]*bsize[1]*bsize[2] *
+                           components);
+  tjf_ck_ptr_ne(thresh, NULL);
+  for(size_t b=0; b < ookbricks(fout); ++b) {
+    ookbrick(of, b, data);
+    for(size_t i=0; i < bsize[0]*bsize[1]*bsize[2]; ++i) {
+      thresh[i] = 0.25f <= data[i] && data[i] <= 0.7f;
+    }
+    ookwrite(fout, b, thresh);
+  }
+  ck_assert(ookclose(fout) == 0);
+  free(data); data = NULL;
+  free(thresh); thresh = NULL;
+  ck_assert_int_eq(filesize(thfile), vol[0]*vol[1]*vol[2]*components);
+}
+END_TEST
+
 static void
 is_value(const float* data, const size_t bsize[3])
 {
@@ -327,7 +385,7 @@ is_value(const float* data, const size_t bsize[3])
     for(size_t y=0; y < bsize[1]; ++y) {
       for(size_t x=0; x < bsize[0]; ++x) {
         assert(data[z*bsize[1]*bsize[0] + y*bsize[0] + x] ==
-                  (float)value(x,y,z));
+               (float)value(x,y,z));
         ck_assert(data[z*bsize[1]*bsize[0] + y*bsize[0] + x] ==
                   (float)value(x,y,z));
       }
@@ -359,8 +417,11 @@ START_TEST(writer_basic)
 
   of = ookread(towrite, vol, bsize, OOK_FLOAT, components);
   tjf_ck_ptr_ne(of, NULL);
-  ookbrick(of, 0, data);
-  is_value(data, bsize);
+  for(size_t i=0; i < 4; ++i) {
+    memset(data, 0, sizeof(float) * bsize[0]*bsize[1]*bsize[2] * components);
+    ookbrick(of, i, data);
+    is_value(data, bsize);
+  }
 
   free(data); data = NULL;
 }
@@ -379,6 +440,7 @@ rwop_suite()
   TCase* writer = tcase_create("writer");
   tcase_add_test(writer, writer_nothing);
   tcase_add_test(writer, writer_basic);
+  tcase_add_test(writer, writer_threshold);
   TCase* multicomp = tcase_create("multicomp");
   tcase_add_test(multicomp, multicomp_read);
 
