@@ -252,15 +252,10 @@ srcop(rwop* op, struct ookfile* of, size_t id, void* buffer)
   /* just for typing convenience: */
   const uint64_t vol[3] = { of->volsize[0], of->volsize[1], of->volsize[2] };
 
-  const size_t bricks_per_source[3] = {
-    vol[0] / of->bricksize[0],
-    vol[1] / of->bricksize[1],
-    vol[2] / of->bricksize[2],
-  };
   size_t src_offset[3] = {
-    (brickid[0] % bricks_per_source[0]) * of->bricksize[0],
-    (brickid[1] % bricks_per_source[1]) * of->bricksize[1],
-    (brickid[2] % bricks_per_source[2]) * of->bricksize[2],
+    (brickid[0] % layout[0]) * of->bricksize[0],
+    (brickid[1] % layout[1]) * of->bricksize[1],
+    (brickid[2] % layout[2]) * of->bricksize[2],
   };
   const size_t original_src_offset[3] = {
     src_offset[0], src_offset[1], src_offset[2]
