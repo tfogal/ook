@@ -154,7 +154,6 @@ img {
 }
 
 pre, code {
-  width: 100%;
   color: #222;
   background-color: #fff;
 
@@ -168,14 +167,14 @@ pre, code {
 
 pre {
   width: 100%;
-  padding: 10px;
+  padding: 5px;
   box-shadow: 0 0 10px rgba(0,0,0,.1);
   overflow: auto;
 }
 
 code {
   padding: 3px;
-  margin: 0 3px;
+  margin: 0 2px;
   box-shadow: 0 0 10px rgba(0,0,0,.1);
 }
 
@@ -264,6 +263,8 @@ Full-Width Styles
 
 .inner {
   position: relative;
+  padding: 20px;
+  font-size: larger;
   margin: 0 auto;
 }
 
@@ -364,8 +365,6 @@ Full-Width Styles
   background: #212121;
 }
 
-
-
 /*******************************************************************************
 Small Device Styles
 *******************************************************************************/
@@ -414,8 +413,6 @@ Small Device Styles
 
   code, pre {
     min-width: 320px;
-    /* max-width: 480px; */
-    font-size: 12px;
+    max-width: 480px;
   }
-
 }
