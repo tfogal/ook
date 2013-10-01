@@ -55,7 +55,7 @@ body {
   box-sizing: border-box;
   color:#373737;
   background: #212121;
-  font-size: 16px;
+  font-size: normal;
   font-family: 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -160,14 +160,11 @@ pre, code {
   background-color: #fff;
 
   font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
-  font-size: 14px;
+  font-size: normal;
 
   border-radius: 2px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px;
-
-
-
 }
 
 pre {
@@ -268,7 +265,7 @@ Full-Width Styles
 
 .inner {
   position: relative;
-  max-width: 640px;
+  /* max-width: 640px; */
   padding: 20px 10px;
   margin: 0 auto;
 }
@@ -420,8 +417,8 @@ Small Device Styles
 
   code, pre {
     min-width: 320px;
-    max-width: 480px;
-    font-size: 11px;
+    /* max-width: 480px; */
+    font-size: 12px;
   }
 
 }

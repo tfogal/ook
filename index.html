@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/tfogal/ook">View on GitHub</a>
 
           <h1 id="project_title">Ook</h1>
-          <h2 id="project_tagline">dynamic bricking</h2>
+          <h2 id="project_tagline">simple dynamic bricking</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/tfogal/ook/zipball/master">Download this project as a .zip file</a>
@@ -34,16 +34,17 @@
         <h1>
 <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h1>
 
-<p>This is ook, a simple library for providing bricked versions of a dataset.</p>
+<p>This is ook, a simple library for providing bricked versions of a
+dataset.</p>
 
-<p>`Bricking' is the term we use in some visualization subfields to refer
-to the process by which a large data set is carved into smaller pieces.
-The major reason one does this is for memory usage reasons.  Typically,
-a large data set exceeds the amount of physical memory available on
-a machine.  One can load up a brick of the data, perform any needed
-processing, and then throw the brick away.  By iterating over this
-process, one can process the entire data set while only needing enough
-memory for a single brick.</p>
+<p>`Bricking' is the term we use in some visualization subfields to
+refer to the process by which a large data set is carved into smaller
+pieces.  The major reason one does this is for memory usage reasons.
+Typically, a large data set exceeds the amount of physical memory
+available on a machine.  One can load up a brick of the data, perform
+any needed processing, and then throw the brick away.  By iterating
+over this process, one can process the entire data set while only
+needing enough memory for a single brick.</p>
 
 <p>Ook essentially provides the illusion that your data set is already
 stored as bricks.</p>
@@ -51,9 +52,9 @@ stored as bricks.</p>
 <h2>
 <a name="what-ook-is-not" class="anchor" href="#what-ook-is-not"><span class="octicon octicon-link"></span></a>What Ook is Not</h2>
 
-<p>Ook <em>only</em> provides a contiguous, bricked view of a data set.  This
-means it may lack some features you desire.  You'll have to provide
-them yourself.</p>
+<p>Ook <em>only</em> provides a contiguous, bricked view of a data
+set.  This means it may lack some features you desire.  You'll have to
+provide them yourself.</p>
 
 <p>Here are some related ideas which are out of scope for Ook:</p>
 
@@ -203,10 +204,10 @@ undefined results after an <code>ookclose</code> operation on the same file.</p>
 
 <p>Note that a close operation may be expensive.</p>
 
-<p>A common error is to ignore the return value of <code>ookclose</code>.  Write
-errors, in particular, are reported during the close.  Code which does
-not check for errors on close should be assumed to write invalid output
-files.</p>
+<p>A common error is to ignore the return value of
+<code>ookclose</code>.  Write errors, in particular, are reported
+during the close.  Code which does not check for errors on close should
+be assumed to write invalid output files.</p>
       </section>
     </div>
 
@@ -217,8 +218,5 @@ files.</p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-
-    
-
   </body>
 </html>

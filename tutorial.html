@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Ook : dynamic bricking" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Ook</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/tfogal/ook">View on GitHub</a>
+
+          <h1 id="project_title">Ook</h1>
+          <h2 id="project_tagline">simple dynamic bricking</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/tfogal/ook/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/tfogal/ook/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="tutorial" class="anchor" href="#tutorial">
+<span class="octicon octicon-link"></span></a>Tutorial</h1>
+
+<p>Ook might be a bit daunting to get started.  Here's a basic guide as
+to how things fit together. We'll build a basic masking application,
+which creates a new `tag' volume based on an input volume.  The
+tags will store <code>1</code> for values inside the range and
+<code>0</code> for values outside the range.</p>
+
+<p>First, decide how you want to include Ook into your project.
+Ook is pretty simple, so you could just copy the files into
+your project if you so chose.  If so, you'll need to copy
+<code>ook.c</code>, <code>ook.h</code>, <code>io-interface.h</code> and
+<code>stdcio.c</code> into your codebase.  Just tell your build system
+to build those (as C99 code) and you're good to go.</p>
+
+<p>The other option is to use Ook's native build system.  In that
+case build Ook is normal and install the library as appropriate
+for your operating system.  Ook currently doesn't include
+installation rules; for those developing their own, Ook generates
+<code>libook.so</code>/<code>.dylib</code> or <code>ook.lib</code>
+(Windows), and client code needs access to <code>ook.h</code> and
+<code>io-interface.h</code>.</p>
+
+<p>Once we've got that out of the way, you'll need to include the Ook
+header file:</p>
+
+<pre><code>#include "ook.h"</code></pre>
+
+We define some global variables for parameters.
+
+<pre><code>
+/* dimensions of the input volume. */
+static uint64_t vol[3] = {0};
+/* filename given as input */
+static char* input = NULL;
+/* filename to create/generate */
+static char* output = NULL;
+/* input type to assume */
+static enum OOKTYPE itype = OOK_FLOAT;
+/* threshold to utilize */
+static double threshold[2] = { -FLT_MAX, FLT_MAX };
+</code></pre>
+
+<p>These mostly define properties of the input volume.  Next lets define a
+simple operator for thresholding our data:</p>
+
+<pre><code>
+static void
+threshf(const void* vol, void* out, const size_t n)
+{
+  const float* ivol = (const float*)vol;
+  uint8_t* o = (uint8_t*)out;
+  for(size_t i=0; i < n; ++i) {
+    o[i] = (threshold[0] <= ivol[i] && threshold[1] <= ivol[i]);
+  }
+}
+</code></pre>
+
+<p><code>threshf</code> takes an input buffer (<code>vol</code>) which
+it assumes to be floating point data.  It produces an output buffer
+(<code>out</code>) of unsigned 8-bit integers.  Note that a simple
+thresholding operation doesn't need any neighbor information, and so we
+have written it to assume a linear buffer for simplicity.</p>
+
+<pre><code>
+int
+main(int argc, char* const argv[])
+{
+  parseopt(argc, argv);
+</code></pre>
+
+<p>We won't define <code>parseopt</code> here, but we can assume it
+parses the program's command line options.  It should fill the global
+variables defined above, and abort if the program options do not make
+any sense.</p>
+
+<p>Now we need to initialize the Ook library.</p>
+
+<pre><code>
+  if(!ookinit(StdCIO)) {
+    fprintf(stderr, "Initialization failed.\n");
+    exit(EXIT_FAILURE);
+  }
+</code></pre>
+
+<p>Note we passed <code>StdCIO</code> to the initialization function.
+Ook needs to be told how to read your files; this is how you can
+inform it about quirks in your file formats.  For now, we're just
+going to work with raw data, and so the builtin <code>StdCIO</code>
+implementation is going to work well enough for us.  As you might
+guess, this utilizes the standard C streams interface for interacting
+with files.</p>
+
+  const uint64_t bricksize[3] = { 64, 64, 64 };
+
+<p>When in doubt, brick sizes of 64<sup>2</sup> or 32<sup>2</sup> are
+a good bet.  Note we can use whatever brick size we want; Ook doesn't
+care if it makes sense for the data.</p>
+
+<pre><code>
+  struct ookfile* fin = ookread(input, vol, bricksize, itype, 1);
+  if(!fin) { perror("open"); exit(EXIT_FAILURE); }
+</code></pre>
+
+<p>Now we open the input file.  The last argument indicates that
+the file <code>input</code> contains only a single component
+(i.e. it's a scalar field).  Note that because we initialized Ook
+with the <code>StdCIO</code> interface earlier, Ook assumes that
+<code>input</code> contains raw data with no header.</p>
+
+<p>The open can, of course, fail.  Ook returns a <code>NULL</code>
+pointer if that happens.</p>
+
+<pre><code>
+  size_t bsize[3];
+  ookmaxbricksize(fin, bsize);
+</code></pre>
+
+<p>We could have typed <code>bricksize</code> everywhere, but
+<code>bsize</code> just feels so nice and concise, ya know?  In any
+case, now <code>bsize</code> and <code>bricksize</code> are synonyms
+for the same values.</p>
+
+<pre><code>
+  const size_t components = 1; /* our program assumes this.. */
+
+  const size_t bytes_brick =
+    sizeof(float) * components * bsize[0]*bsize[1]*bsize[2];
+  void* data = xmalloc(bytes_brick);
+  float* outdata = xmalloc(sizeof(uint8_t) * components *
+                           bsize[0]*bsize[1]*bsize[2]);
+</code></pre>
+
+<p>We need space for the bricks we'll load.  We chose to just use
+a large brick of the maximum size in use.  This means if there's a
+partial brick, we're actually using more memory than we technically
+need to.  That's okay; partial bricks don't happen much in practice,
+and even the largest brick size is pretty tiny, so it's better to not
+bother with all the allocations.</p>
+
+<p>Note also that our output data is smaller, since <code>uint8_t</code>
+data is smaller than <code>float</code> data.</p>
+
+<pre><code>
+  struct ookfile* fout = ookcreate(output, vol, bsize, OOK_U8,
+                                   components);
+  if(!fout) {
+    perror("open");
+    free(outdata);
+    free(data);
+    ookclose(fin);
+    return EXIT_FAILURE;
+  }
+</code></pre>
+
+<p>Now we create the output file.  Similar to <code>ookread</code>,
+really, except we're forcing <code>uint8_t</code> data via
+<code>OOK_U8</code> this time.</p>
+
+<pre><code>
+  for(size_t brick=0; brick < ookbricks(fin); ++brick) {
+    size_t bs[3];
+    ookbricksize(fin, brick, bs);
+    ookbrick(fin, brick, data);
+    threshf(data, outdata, bs[0]*bs[1]*bs[2]);
+    ookwrite(fout, brick, outdata);
+    printf("Processed brick %5zu / %5zu...\n", brick, ookbricks(fin));
+  }
+</code></pre>
+
+<p>This is how we loop through every brick in Ook.  Since we don't care
+about the order we get bricks in, we just use a linear 1D index from
+0 to the maximum number of bricks in the dataset.  Note we query the
+brick size with <code>ookbricksize</code> every iteration!  This is
+important, as some bricks are smaller than others and we don't want to
+process data that's just laying around in memory.</p>
+
+<p>Also note that we don't need to pass the sizes to
+<code>ookbrick</code> or <code>ookwrite</code>.  Ook knows how big a
+brick is, so it figures out this information out for you.</p>
+
+<pre><code>
+  free(data);
+  free(outdata);
+  if(ookclose(fin) != 0) {
+    printf("Error closing input file..\n");
+  }
+  int err = ookclose(fout);
+  if(err != 0) {
+    fprintf(stderr, "Error writing data! Err #: %d\n", err);
+    return EXIT_FAILURE;
+  }
+  
+  return EXIT_SUCCESS;
+}
+</code></pre>
+
+<p>Finally, we clean up our resources.  The memory we allocated should
+be cleaned up, of course.  More importantly, we need to close the Ook
+files we opened with <code>ookclose</code>.  Note that we check for
+errors from <code>ookclose</code>, and that closing the input file is
+essentially ignored.  The input file worked until now; a failed close
+just means we'll leak resources.  If the output file failed to close,
+on the other hand, that likely indicates the file is only partially
+written.</p>
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Ook maintained by <a href="https://github.com/tfogal">tfogal</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+  </body>
+</html>
