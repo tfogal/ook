@@ -126,9 +126,11 @@ implementation is going to work well enough for us.  As you might
 guess, this utilizes the standard C streams interface for interacting
 with files.</p>
 
+<pre><code>
   const uint64_t bricksize[3] = { 64, 64, 64 };
+</code></pre>
 
-<p>When in doubt, brick sizes of 64<sup>2</sup> or 32<sup>2</sup> are
+<p>When in doubt, brick sizes of 64<sup>3</sup> or 32<sup>3</sup> are
 a good bet.  Note we can use whatever brick size we want; Ook doesn't
 care if it makes sense for the data.</p>
 
