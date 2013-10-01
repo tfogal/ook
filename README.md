@@ -50,7 +50,7 @@ For simple raw data, you can pass it ``StdCIO``.
 
     struct ookfile;
 
-``ookfile`` is an opaque time which represents a file opened by Ook.
+``ookfile`` is an opaque type which represents a file opened by Ook.
 Note that you may have a file open in your own code and opened a second
 time through Ook.  With a "header + data" type of file format, you
 might do this just to read the header and then open it again via Ook
@@ -65,8 +65,8 @@ safely assume it to be no less than 100.
 ``OOKTYPE`` is an enumeration which describes the underlying type of
 the data.  The options are:
 
-    OOK_I8,OOK_U8, OOK_I16,OOK_U16, OOK_I32,OOK_U32,
-    OOK_I64,OOK_U64, OOK_FLOAT, OOK_DOUBLE
+    OOK_I8,OOK_U8, OOK_I16,OOK_U16, OOK_I32,OOK_U32, OOK_I64,OOK_U64,
+    OOK_FLOAT, OOK_DOUBLE
 
 The data type of a file cannot be changed once it is opened.
 
@@ -74,7 +74,7 @@ The data type of a file cannot be changed once it is opened.
                             const size_t bricksize[3], const enum OOKTYPE,
                             const size_t components);
 
-``ookread'' gives back a file used in basically all other Ook function
+``ookread`` gives back a file used in basically all other Ook function
 calls.  It only allows read access to a file.
 
 In order, the arguments are: a filename to open, the full dimensions of
@@ -118,7 +118,7 @@ perform the copy.
 If you get segfaults in ``ookbrick``, the most likely explanation is
 that you are passing in an invalid pointer or a memory block which is
 not large enough for the given brick.  Remember to calculate enough
-space for multicomponent and the width of each datum.
+space for multicomponent data and the width of each datum.
 
     void ookdimensions(const struct ookfile*, uint64_t[3]);
 
@@ -137,9 +137,9 @@ instead of read access.
 
 Note the given file is truncated!
 
-Ook will not detect if you open the same file multiple times with any
-mixture of readers and writers.  The behavior in this situation is
-undefined.
+Ook will not detect if you open the same file multiple times with
+any mixture of readers and writers.  The serialization of individual
+readers/writers in this situation is undefined.
 
     void ookwrite(struct ookfile*, const size_t id, const void*);
 
