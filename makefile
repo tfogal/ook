@@ -20,4 +20,4 @@ libook.so: ook.o stdcio.o
 	@#$(CC) -fPIC -shared $^ -o $@ $(LIBS)
 
 clean:
-	rm -f $(OBJ) libook.so ooksample
+	rm -f $(OBJ) libook.so ookcopy ooksample ookthreshold
