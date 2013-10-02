@@ -1,5 +1,8 @@
 #ifndef OOK_IO_INTERFACE_H
 #define OOK_IO_INTERFACE_H
+
+#include <sys/types.h>
+
 /** IO Interfaces used in Ook.  These are abstractions over an idea such as
  * reading or writing data.
  * @note These interfaces are byte-oriented.  Ook will internally handle all the
