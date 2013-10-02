@@ -111,11 +111,11 @@ setup_multicomp()
     }
   }
   fclose(fp);
-  ck_assert(ookinit(StdCIO));
+  ck_assert(ookinit());
 
   const uint64_t sz[3] = { dims[0], dims[1], dims[2] };
   const size_t bsize[3] = { dims[0]/2, dims[1],  dims[2]/2 };
-  of = ookread(multifile, sz, bsize, OOK_U16, 2);
+  of = ookread(StdCIO, multifile, sz, bsize, OOK_U16, 2);
   tjf_ck_ptr_ne(of, NULL);
 }
 
@@ -164,10 +164,10 @@ END_TEST
 static void
 setup_zero()
 {
-  ck_assert(ookinit(StdCIO));
+  ck_assert(ookinit());
   const uint64_t sz[3] = { 32, 32, 32 };
   const size_t bsize[3] = { 16, 16, 32 };
-  zeroes = ookread("/dev/zero", sz, bsize, OOK_U16, 1);
+  zeroes = ookread(StdCIO, "/dev/zero", sz, bsize, OOK_U16, 1);
   tjf_ck_ptr_ne(zeroes, NULL);
 }
 
@@ -249,11 +249,11 @@ setup_simple()
     }
   }
   fclose(fp);
-  ck_assert(ookinit(StdCIO));
+  ck_assert(ookinit());
 
   const uint64_t sz[3] = { 16, 16, 16 };
   const size_t bsize[3] = { 8, 8, 16 };
-  of = ookread(simplefile, sz, bsize, OOK_U32, 1);
+  of = ookread(StdCIO, simplefile, sz, bsize, OOK_U32, 1);
   tjf_ck_ptr_ne(of, NULL);
 }
 
@@ -298,12 +298,12 @@ static void
 setup_writer()
 {
   srand(0xdeadbeef); /* always use same seed, for reproducibility */
-  ck_assert(ookinit(StdCIO));
+  ck_assert(ookinit());
 
   const uint64_t vol[3] = { 4, 8, 12 };
   const size_t bsize[3] = { 2, 4, 6 };
   const size_t components = 1;
-  of = ookcreate(towrite, vol, bsize, OOK_FLOAT, components);
+  of = ookcreate(StdCIO, towrite, vol, bsize, OOK_FLOAT, components);
   tjf_ck_ptr_ne(of, NULL);
 }
 
@@ -356,10 +356,11 @@ START_TEST(writer_threshold)
     ck_assert_int_eq(errno, 0);
   }
   ck_assert(ookclose(of) == 0);
-  of = ookread(towrite, vol, bsize, OOK_FLOAT, components);
+  of = ookread(StdCIO, towrite, vol, bsize, OOK_FLOAT, components);
   tjf_ck_ptr_ne(of, NULL);
   const char* thfile = ".threshold-test";
-  struct ookfile* fout = ookcreate(thfile, vol, bsize, OOK_U8,  components);
+  struct ookfile* fout = ookcreate(StdCIO, thfile, vol, bsize, OOK_U8,
+                                   components);
   ck_assert_int_eq(ookbricks(fout), 8);
   uint8_t* thresh = malloc(sizeof(uint8_t) * bsize[0]*bsize[1]*bsize[2] *
                            components);
@@ -415,7 +416,7 @@ START_TEST(writer_basic)
   ookwrite(of, 3, data); ck_assert_int_eq(errno, 0);
   ck_assert(ookclose(of) == 0);
 
-  of = ookread(towrite, vol, bsize, OOK_FLOAT, components);
+  of = ookread(StdCIO, towrite, vol, bsize, OOK_FLOAT, components);
   tjf_ck_ptr_ne(of, NULL);
   for(size_t i=0; i < 4; ++i) {
     memset(data, 0, sizeof(float) * bsize[0]*bsize[1]*bsize[2] * components);

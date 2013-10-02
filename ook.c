@@ -12,12 +12,12 @@
 
 struct ookfile {
   void* fd;
+  struct io iop;
   size_t bricksize[3];
   uint64_t volsize[3];
   enum OOKTYPE type;
   size_t components;
 };
-struct io iop;
 
 #ifndef NDEBUG
 static int test();
@@ -51,18 +51,17 @@ typedef int (rwop)(void* fd, const off_t offset, const size_t len, void* buf);
 static void srcop(rwop* op, struct ookfile* of, size_t id, void* buffer);
 
 bool
-ookinit(struct io impl)
+ookinit()
 {
 #ifndef NDEBUG
   test();
 #endif
-  iop = impl;
   return true;
 }
 
 struct ookfile*
-ookread(const char* fn, const uint64_t voxels[3], const size_t bsize[3],
-        const enum OOKTYPE type, const size_t components)
+ookread(struct io iop, const char* fn, const uint64_t voxels[3],
+        const size_t bsize[3], const enum OOKTYPE type, const size_t components)
 {
   /* bricks can't be larger than data size. */
   if(bsize[0] > voxels[0] ||
@@ -76,6 +75,7 @@ ookread(const char* fn, const uint64_t voxels[3], const size_t bsize[3],
     errno = -ENOMEM;
     return NULL;
   }
+  of->iop = iop;
   of->fd = iop.open(fn, OOK_RDONLY);
   if(of->fd == NULL) {
     free(of);
@@ -107,7 +107,7 @@ ookmaxbricksize(const struct ookfile* of, size_t bs[3])
 void
 ookbrick(struct ookfile* of, size_t id, void* target)
 {
-  srcop(iop.read, of, id, target);
+  srcop(of->iop.read, of, id, target);
 }
 
 void
@@ -117,7 +117,8 @@ ookdimensions(const struct ookfile* of, uint64_t voxels[3])
 }
 
 struct ookfile*
-ookcreate(const char* filename, const uint64_t dims[3], const size_t bsize[3],
+ookcreate(struct io iop, const char* filename,
+          const uint64_t dims[3], const size_t bsize[3],
           enum OOKTYPE type, size_t components)
 {
   /* bricks can't be larger than data size. */
@@ -132,7 +133,8 @@ ookcreate(const char* filename, const uint64_t dims[3], const size_t bsize[3],
     errno = -ENOMEM;
     return NULL;
   }
-  of->fd = iop.open(filename, OOK_RDWR);
+  of->iop = iop;
+  of->fd = of->iop.open(filename, OOK_RDWR);
   if(of->fd == NULL) {
     free(of);
     errno = -EINVAL;
@@ -143,9 +145,9 @@ ookcreate(const char* filename, const uint64_t dims[3], const size_t bsize[3],
   of->type = type;
   of->components = components;
 
-  if(iop.preallocate) {
+  if(of->iop.preallocate) {
     const off_t sz = width(type) * components * dims[0]*dims[1]*dims[2];
-    iop.preallocate(of->fd, sz);
+    of->iop.preallocate(of->fd, sz);
   }
   return of;
 }
@@ -175,13 +177,13 @@ ookwrite(struct ookfile* of, const size_t id, const void* from)
 {
   /* 'srcop' is defined for a 'read' buffer, which doesn't have the same
    * 'const's: hence the casting. */
-  srcop((rwop*)iop.write, of, id, (void*)from);
+  srcop((rwop*)of->iop.write, of, id, (void*)from);
 }
 
 int
 ookclose(struct ookfile* of)
 {
-  int errcode = iop.close(of->fd);
+  int errcode = of->iop.close(of->fd);
   free(of);
   return errcode;
 }

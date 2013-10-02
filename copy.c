@@ -108,13 +108,13 @@ main(int argc, char* const argv[])
 {
   parseopt(argc, argv);
 
-  if(!ookinit(StdCIO)) {
+  if(!ookinit()) {
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
   const uint64_t bricksize[3] = { 64, 64, 64 };
 
-  struct ookfile* fin = ookread(input, vol, bricksize, itype, 1);
+  struct ookfile* fin = ookread(StdCIO, input, vol, bricksize, itype, 1);
   if(!fin) { perror("open"); exit(EXIT_FAILURE); }
 
   size_t bsize[3];
@@ -127,7 +127,8 @@ main(int argc, char* const argv[])
   void* data = xmalloc(bytes_brick);
   float* outdata = xmalloc(bytes_brick);
 
-  struct ookfile* fout = ookcreate(output, vol, bsize, itype, components);
+  struct ookfile* fout = ookcreate(StdCIO, output, vol, bsize, itype,
+                                   components);
   if(!fout) {
     perror("open");
     free(outdata);

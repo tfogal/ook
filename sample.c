@@ -221,16 +221,18 @@ main(int argc, char* const argv[])
 {
   parseopt(argc, argv);
 
-  if(!ookinit(StdCIO)) {
+  if(!ookinit()) {
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
   const uint64_t volumesize[3] = { 2025, 1600, 400 };
   const uint64_t bricksize[3] = { 405, 320, 80 };
 
-  struct ookfile* f1 = ookread(input[0], volumesize, bricksize, OOK_U16, 1);
+  struct ookfile* f1 = ookread(StdCIO, input[0], volumesize, bricksize,
+                               OOK_U16, 1);
   if(!f1) { perror("open"); exit(EXIT_FAILURE); }
-  struct ookfile* f2 = ookread(input[1], volumesize, bricksize, OOK_U8, 1);
+  struct ookfile* f2 = ookread(StdCIO, input[1], volumesize, bricksize,
+                               OOK_U8, 1);
   if(!f2) { perror("open"); exit(EXIT_FAILURE); }
 
   if(!compatible(f1, f2)) {
@@ -254,7 +256,8 @@ main(int argc, char* const argv[])
   uint64_t dims[3];
   ookdimensions(f1, dims);
 
-  struct ookfile* fout = ookcreate(output, dims, bsize, OOK_FLOAT, components);
+  struct ookfile* fout = ookcreate(StdCIO, output, dims, bsize, OOK_FLOAT,
+                                   components);
   if(!fout) {
     perror("open");
     free(outdata);

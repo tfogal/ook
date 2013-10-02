@@ -18,8 +18,8 @@ struct ookfile;
 enum OOKTYPE { OOK_I8,OOK_U8, OOK_I16,OOK_U16, OOK_I32,OOK_U32,
                OOK_I64,OOK_U64, OOK_FLOAT, OOK_DOUBLE };
 
-bool ookinit(struct io);
-struct ookfile* ookread(const char*, const uint64_t voxels[3],
+bool ookinit();
+struct ookfile* ookread(struct io, const char*, const uint64_t voxels[3],
                         const size_t bricksize[3], const enum OOKTYPE,
                         const size_t components);
 
@@ -30,7 +30,8 @@ void ookbrick(struct ookfile*, size_t id, void* data);
 void ookdimensions(const struct ookfile*, uint64_t[3]);
 
 struct ookfile*
-ookcreate(const char* filename, const uint64_t dims[3], const size_t bsize[3],
+ookcreate(struct io, const char* filename,
+          const uint64_t dims[3], const size_t bsize[3],
           enum OOKTYPE, size_t components);
 
 void ookbricksize(struct ookfile*, const size_t id, size_t bsize[3]);

@@ -4,6 +4,7 @@
 /* type is opaque; make it transparent. */
 struct oofile {
   void* blank_;
+  struct io op;
   size_t bricksize[3];
   uint64_t volsize[3];
   enum FAKE { F_ONE, F_TWO } f;
