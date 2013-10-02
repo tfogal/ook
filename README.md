@@ -41,12 +41,11 @@ characters, and never contain underscores.
 
 The important ones functions are:
 
-    bool ookinit(struct io);
+    bool ookinit();
 
 ``ookinit`` is an initialization function for the library.  There is no
 corresponding deinitialization function; just make sure all your files
-are closed.  The argument tells Ook which IO interface it should use.
-For simple raw data, you can pass it ``StdCIO``.
+are closed.
 
     struct ookfile;
 
@@ -70,16 +69,17 @@ the data.  The options are:
 
 The data type of a file cannot be changed once it is opened.
 
-    struct ookfile* ookread(const char*, const uint64_t voxels[3],
+    struct ookfile* ookread(struct io, const char*, const uint64_t voxels[3],
                             const size_t bricksize[3], const enum OOKTYPE,
                             const size_t components);
 
 ``ookread`` gives back a file used in basically all other Ook function
 calls.  It only allows read access to a file.
 
-In order, the arguments are: a filename to open, the full dimensions of
-the file, the desired brick size, the underlying type of the data, and
-the number of components in the data.
+In order, the arguments are: the IO interface to use for this file, a
+filename to open, the full dimensions of the file, the desired brick
+size, the underlying type of the data, and the number of components in
+the data.
 
     size_t ookbricks(const struct ookfile*);
 
@@ -128,7 +128,7 @@ returns the volume size information you gave to Ook when you opened the
 file.
 
     struct ookfile*
-    ookcreate(const char* filename, const uint64_t dims[3],
+    ookcreate(struct io, const char* filename, const uint64_t dims[3],
               const size_t bsize[3], enum OOKTYPE, size_t components);
 
 ``ookcreate`` is the "writing" analogy to ``ookread``.  The arguments
