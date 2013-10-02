@@ -108,19 +108,14 @@ any sense.</p>
 
 <p>Now we need to initialize the Ook library.</p>
 
-<pre><code>  if(!ookinit(StdCIO)) {
+<pre><code>  if(!ookinit()) {
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
 </code></pre>
 
-<p>Note we passed <code>StdCIO</code> to the initialization function.
-Ook needs to be told how to read your files; this is how you can
-inform it about quirks in your file formats.  For now, we're just
-going to work with raw data, and so the builtin <code>StdCIO</code>
-implementation is going to work well enough for us.  As you might
-guess, this utilizes the standard C streams interface for interacting
-with files.</p>
+<p>Nothing much there.  Let's move on to bricking and files.</p>
+
 
 <pre><code>  const uint64_t bricksize[3] = { 64, 64, 64 };</code></pre>
 
@@ -128,15 +123,22 @@ with files.</p>
 a good bet.  Note we can use whatever brick size we want; Ook doesn't
 care if it makes sense for the data.</p>
 
-<pre><code>  struct ookfile* fin = ookread(input, vol, bricksize, itype, 1);
+<pre><code>  struct ookfile* fin = ookread(StdCIO, input, vol, bricksize, itype, 1);
   if(!fin) { perror("open"); exit(EXIT_FAILURE); }
 </code></pre>
 
 <p>Now we open the input file.  The last argument indicates that
 the file <code>input</code> contains only a single component
-(i.e. it's a scalar field).  Note that because we initialized Ook
-with the <code>StdCIO</code> interface earlier, Ook assumes that
-<code>input</code> contains raw data with no header.</p>
+(i.e. it's a scalar field).</p>
+
+<p>Note we passed <code>StdCIO</code> as the first argument.  Ook needs
+to be told how to read your files; this is how you can inform it about
+quirks in your file formats.  For now, we're just going to work with
+raw data, and so the builtin <code>StdCIO</code> implementation is
+going to work well enough for us.  As you might guess, this utilizes
+the standard C streams interface for interacting with files.  Since
+these functions don't skip a header or anything like that, Ook assumes
+'input' contains raw data.</p>
 
 <p>The open can, of course, fail.  Ook returns a <code>NULL</code>
 pointer if that happens.</p>
@@ -168,8 +170,8 @@ bother with all the allocations.</p>
 <p>Note also that our output data is smaller, since <code>uint8_t</code>
 data is smaller than <code>float</code> data.</p>
 
-<pre><code>  struct ookfile* fout = ookcreate(output, vol, bsize, OOK_U8,
-                                   components);
+<pre><code>  struct ookfile* fout = ookcreate(StdCIO, output, vol, bsize,
+                                   OOK_U8, components);
   if(!fout) {
     perror("open");
     free(outdata);
