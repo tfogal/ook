@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include "ook.h"
 #include "imgio.h"
+#include "stack.h"
 
 /* dimensions of the input volume. */
 static uint64_t vol[3] = {0};
@@ -113,9 +114,9 @@ main(int argc, char* const argv[])
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
-  const uint64_t bricksize[3] = { 64, 64, 1 };
+  const uint64_t bricksize[3] = { 64, 64, 64 };
 
-  struct ookfile* fin = ookread(ImageIO, input, vol, bricksize, itype, 1);
+  struct ookfile* fin = ookread(StackIO, input, vol, bricksize, itype, 1);
   if(!fin) { perror("open"); exit(EXIT_FAILURE); }
 
   size_t bsize[3];
@@ -142,7 +143,9 @@ main(int argc, char* const argv[])
   for(size_t brick=0; brick < ookbricks(fin); ++brick) {
     size_t bs[3];
     ookbricksize(fin, brick, bs);
-    ookbrick(fin, brick, data);
+    if(ookbrick(fin, brick, data) != 0) {
+      fprintf(stderr, "Failed read.\n"); break;
+    }
     ookwrite(fout, brick, data);
     printf("\rProcessed brick %5zu / %5zu...", brick, ookbricks(fin));
   }
