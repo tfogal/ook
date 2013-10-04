@@ -6,13 +6,21 @@
 #include <vips/vips.h>
 #include "io-interface.h"
 
+static int img_close(void*);
+
 static void*
-img_open(const char* fn, const enum OOKMODE mode)
+img_open(const char* fn, const enum OOKMODE mode, struct metadata md)
 {
   const char* access = "rd";
   if(mode == OOK_RDWR) { access = "w"; }
   IMAGE* img = im_open(fn, access);
   if(NULL == img) {
+    errno = -EINVAL;
+    return NULL;
+  }
+  if(md.voxels[0] != (uint64_t)img->Xsize ||
+     md.voxels[1] != (uint64_t)img->Ysize) {
+    img_close(img);
     errno = -EINVAL;
     return NULL;
   }

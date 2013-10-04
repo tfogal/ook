@@ -5,8 +5,9 @@
 #include "io-interface.h"
 
 static void*
-stdc_open(const char* fn, const enum OOKMODE mode)
+stdc_open(const char* fn, const enum OOKMODE mode, struct metadata md)
 {
+  (void) md;
   const char* access = "r";
   if(mode == OOK_RDWR) { access = "wb"; }
   FILE* fp = fopen(fn, access);
@@ -19,9 +20,9 @@ stdc_open(const char* fn, const enum OOKMODE mode)
 }
 
 static void*
-stdc_open_dbg(const char* fn, const enum OOKMODE mode)
+stdc_open_dbg(const char* fn, const enum OOKMODE mode, struct metadata md)
 {
-  void* rv = stdc_open(fn, mode);
+  void* rv = stdc_open(fn, mode, md);
   fprintf(stderr, "[ook] opened %p\n", rv);
   return rv;
 }

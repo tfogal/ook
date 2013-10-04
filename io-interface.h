@@ -1,6 +1,11 @@
 #ifndef OOK_IO_INTERFACE_H
 #define OOK_IO_INTERFACE_H
 
+#ifdef _MSC_VER
+# include <stdint.h>
+#else
+# include <inttypes.h>
+#endif
 #include <sys/types.h>
 
 /** IO Interfaces used in Ook.  These are abstractions over an idea such as
@@ -16,7 +21,12 @@
  * @return NULL on failure, identifier on success. */
 /**@{*/
 enum OOKMODE { OOK_RDONLY, OOK_RDWR };
-typedef void* (opener)(const char* fn, const enum OOKMODE);
+struct metadata {
+  uint64_t voxels[3];
+  size_t components;
+  size_t width; /* in bytes */
+};
+typedef void* (opener)(const char* fn, const enum OOKMODE, struct metadata);
 /**@}*/
 
 /** The reader interface wraps basic 'read' operations.
