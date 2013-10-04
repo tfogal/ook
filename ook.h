@@ -26,7 +26,7 @@ struct ookfile* ookread(struct io, const char*, const uint64_t voxels[3],
 size_t ookbricks(const struct ookfile*);
 void ookmaxbricksize(const struct ookfile*, size_t[3]);
 
-void ookbrick(struct ookfile*, size_t id, void* data);
+int ookbrick(struct ookfile*, size_t id, void* data);
 void ookdimensions(const struct ookfile*, uint64_t[3]);
 
 struct ookfile*

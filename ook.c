@@ -110,10 +110,12 @@ ookmaxbricksize(const struct ookfile* of, size_t bs[3])
 }
 
 /* copies data from the appropriate part of the file into 'target'. */
-void
+int
 ookbrick(struct ookfile* of, size_t id, void* target)
 {
+  errno = 0;
   srcop(of->iop.read, of, id, target);
+  return errno;
 }
 
 void
