@@ -1,0 +1,82 @@
+.TH OOKCREATE 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookcreate \- create a file to store a dataset in.
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "struct ookfile* ookcreate(struct io " interface ", const char* " filename
+.BI "                          const uint64_t " dims "[3], "
+.BI "                          const size_t " bsize "[3], "
+.BI "                          enum OOKTYPE " type ", size_t " components );
+.fi
+.SH DESCRIPTION
+.LP
+ookcreate returns a
+.IR struct\ ookfile ,
+which is used in basically all other Ook function calls.  It allows read and
+write access to a file.
+.LP
+The file is created by the call to
+.BR ookcreate ().
+.B Note
+that the file will be truncated when opened!  Ook does not currently support
+switching between reading and writing for a given file.  However, client code
+may perform these in phases: e.g. all writing, then all reading, then close the
+file.
+.LP
+The 
+.I interface
+option gives the IO interface to use; see
+.BR io-interface(7).
+.I filename
+is the filename to read.  The desired number of voxels in the dataset must be
+given in
+.IR voxels .
+.I bsize
+is the desired size of the bricks in the volume.  Note this must make sense for
+the given volume; one cannot have larger bricks than the volume itself.
+.I type
+is the primitive type of the data; Ook uses this and
+.I components
+to figure out how big each element is.
+.LP
+The Ook interface provides a bricked dataset, but the file this API creates is
+.IR not
+bricked.  By default, the created file will be a raw linear array with the X
+dimension
+changing fastest and the Z dimension changing slowest (i.e. the standard C
+array ordering).  The
+.BR io-interface(7)
+can alter this layout, of course.
+
+.SH "RETURN VALUE"
+On success,
+.BR ookcreate ()
+returns a pointer to an opaque structure describing the file.  On
+error, NULL is returned and
+.I errno
+is set appropriately.
+
+.SH ERRORS
+In general, an exhaustive listing is impossible;
+.BR ookcreate ()
+can fail for any of the reasons that
+.IR interface 's
+.I open
+method can fail.  Errors specific to
+.BR ookcreate ()
+are listed here.
+.TP
+.B EINVAL
+Brick size is larger than volume size, or
+.I filename
+was invalid.
+.TP
+.B ENOMEM
+No memory available to create opaque structure.
+
+.SH "SEE ALSO"
+
+.BR io-interface (7),
+.BR ookread (3)

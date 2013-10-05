@@ -1,0 +1,46 @@
+.TH OOKDIMENSIONS 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookdimensions \- reports the volume size given when initializing the file.
+.SH SYNOPSIS
+.nf
+.B #include <errno.h>
+.B #include <ook.h>
+.sp
+.BI "void ookdimensions(const struct ookfile* " of ", uint64_t " dims[3] );
+.fi
+
+.SH DESCRIPTION
+.LP
+.BR ookdimensions ()
+reports the volume size which was input in the previous
+.BR ookread(3)
+or
+.BR ookcreate(3)
+call.  The
+.I dims
+argument is filled with the volume size.
+.LP
+
+.SH "RETURN VALUE"
+.BR ookdimensions ()
+technically returns nothing.  Instead, it fills the
+.I dims
+argument.  On error,
+.I errno
+is set and the contents of
+.I dims
+are undefined.
+
+.SH ERRORS
+.TP
+.B EINVAL
+The given
+.IR of
+pointer does not point to a valid
+.I struct\ ookfile
+pointer.
+
+.SH "SEE ALSO"
+
+.BR ookread (3),
+.BR ookcreate (3)

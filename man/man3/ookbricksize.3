@@ -1,0 +1,110 @@
+.TH OOKBRICKSIZE 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookbricksize \- reports the size of the given brick.
+.SH SYNOPSIS
+.nf
+.B #include <errno.h>
+.B #include <ook.h>
+.sp
+.BI "void ookbricksize(const struct ookfile* " of ", const size_t " id ", "
+.BI "                  size_t " bsize "[3]);"
+.fi
+
+.SH DESCRIPTION
+.LP
+.BR ookbricksize ()
+reports the brick size for the given brick.  The
+.I bsize
+argument is filled with the number of voxels the brick contains.
+.LP
+It is rare for all bricks in a dataset to be uniformly sized.  If the
+brick size does not evenly divide the domain size, a dataset will end
+up with partial bricks.  Therefore, it is necessary to query the brick
+size of each brick in order to ensure you do not read too much data out
+of it.
+
+.SH "RETURN VALUE"
+.BR ookbricksize ()
+technically returns nothing.  Instead, it fills the
+.I bsize
+argument.  On error,
+.I errno
+is set and the contents of
+.I bsize
+are undefined.
+
+.SH ERRORS
+.TP
+.B EINVAL
+The given
+.IR of
+pointer does not point to a valid
+.I struct\ ookfile
+pointer, or
+.IR id
+is not a valid brick index.
+
+.SH EXAMPLE
+.PP
+The following C99 function reports the
+.B voxel
+indices which satisfy the passed predicate.  The input data is assumed to be
+single-component
+.B uint16_t
+data.
+.nf
+
+typedef bool (predicate)(const uint16_t);
+void
+search(const struct ookfile* of, predicate* p)
+{
+  size_t mbs[3];
+  ookmaxbricksize(of, mbs);
+
+  uint16_t* data = malloc(sizeof(uint16_t) * mbs[0]*mbs[1]*mbs[2]);
+
+  size_t layout[3];
+  size_t bid[3];
+  size_t bsize[3];
+  ookbricks3(of, layout);
+
+  uint64_t nvoxels[3]; /* total number of voxels in dataset */
+  ookdimensions(of, nvoxels);
+
+  /* 3D loop to iterate over all bricks. */
+  for(bid[2] = 0; bid[2] < layout[2]; ++bid[2]) {
+    for(bid[1] = 0; bid[1] < layout[1]; ++bid[1]) {
+      for(bid[0] = 0; bid[0] < layout[0]; ++bid[0]) {
+        ookbricksize3(of, bid, bsize);
+        ookbrick3(of, bid, data);
+
+        /* 3D loop to iterate over every voxel in a brick. */
+        for(size_t z=0; z < bsize[2]; ++z) {
+          for(size_t y=0; y < bsize[1]; ++y) {
+            for(size_t x=0; x < bsize[0]; ++x) {
+              const size_t i = z*bsize[1]*bsize[0] + y*bsize[0] + x;
+              if(p(data[i])) {
+                /* need the index within the dataset, not brick */
+                const size_t vi[3] = { /* voxel index */
+                  (mbs[0] * bid[0]) + x,
+                  (mbs[1] * bid[1]) + y,
+                  (mbs[2] * bid[2]) + z
+                };
+                printf("voxel @ {%lu,%lu,%lu} passes\n",
+                       vi[0], vi[1], vi[2]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  free(data);
+}
+.fi
+
+.SH "SEE ALSO"
+
+.BR ookmaxbricksize (3),
+.BR ookread (3),
+.BR ookcreate (3)

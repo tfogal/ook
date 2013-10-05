@@ -1,0 +1,48 @@
+.TH OOKCLOSE 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookclose \- flush pending operations and release internal resources for an
+ook file.
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "int ookclose(struct ookfile* " of ");"
+.fi
+.SH DESCRIPTION
+.LP
+.BR ookclose ()
+flushes any pending operations for a file opened by
+.BR ookcreate (),
+and releases any internal resources allocated from
+.BR ookcreate ()
+or
+.BR ookread ().
+.LP
+Note that there may be an internal limit to the number of concurrently
+open files a process may have.
+
+.SH "RETURN VALUE"
+.BR ookclose ()
+returns 0 on success and a non-zero error code on failure.
+
+.SH ERRORS
+.TP
+.B EINVAL
+The given
+.IR of
+pointer does not point to a valid
+.I struct\ ookfile
+pointer.
+.PP
+In addition,
+.BR ookclose ()
+may fail for any of the reasons that the previously-given
+.BR io-interface(7) 's
+.I close
+method can fail.
+
+.SH "SEE ALSO"
+
+.BR ookcreate (3),
+.BR ookread (3),
+.BR io-interface (7)
