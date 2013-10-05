@@ -107,6 +107,7 @@ ookbricks(const struct ookfile* ook)
 void
 ookmaxbricksize(const struct ookfile* of, size_t bs[3])
 {
+  if(of == NULL) { errno = EINVAL; return; }
   memcpy(bs, of->bricksize, sizeof(size_t)*3);
 }
 
