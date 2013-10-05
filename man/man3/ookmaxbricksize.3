@@ -1,0 +1,50 @@
+.TH OOKMAXBRICKSIZE 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookmaxbricksize \- reports the brick size used when initializing a file.
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "void ookmaxbricksize(const struct ookfile* " of ", size_t " bsize[3] );
+.fi
+
+.SH DESCRIPTION
+.LP
+.BR ookmaxbricksize ()
+reports the brick size input in the previous
+.BR ookread(3)
+or
+.BR ookcreate(3)
+call.  The
+.I bsize
+argument is filled with the brick size.
+.LP
+
+Note that any individual brick may be smaller than this brick size.
+In particular, Ook creates tiny bricks on the edges of data sets to
+account for the case that the brick size does not evenly divide the
+domain.  However, Ook guarantees that no brick will be larger than the size
+return from
+.BR ookmaxbricksize ().
+
+.SH "RETURN VALUE"
+.BR ookbricks ()
+technically returns nothing.  Instead, it fills the
+.I bsize
+argument.
+returns the total number of bricks in a dataset.
+
+.SH ERRORS
+.TP
+.B EINVAL
+The given
+.IR of
+pointer does not point to a valid
+.I struct\ ookfile
+pointer.
+
+.SH "SEE ALSO"
+
+.BR ookread (3),
+.BR ookcreate (3),
+.BR ookbricksize (3)

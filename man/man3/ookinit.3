@@ -1,0 +1,32 @@
+.TH OOKINIT 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookinit \- initializes the Ook library
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "bool ookinit();"
+.fi
+
+.SH DESCRIPTION
+.LP
+.BR ookinit ()
+initializes the Ook library.  Every process must call
+.BR ookinit ()
+before any other Ook function calls.
+
+.SH "RETURN VALUE"
+.BR ookinit ()
+may return 
+.I false
+when library initialization fails.  The results of Ook operations after an
+unsuccessful
+.BR ookinit ()
+call are undefined.
+
+.SH ERRORS
+No errors are currently defined.
+
+.SH "SEE ALSO"
+
+.BR ook (7)

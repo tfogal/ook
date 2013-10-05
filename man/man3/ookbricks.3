@@ -1,0 +1,30 @@
+.TH OOKBRICKS 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookbricks \- reports the total number of bricks in a dataset
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "size_t ookbricks(const struct ookfile* " of );
+.fi
+
+.SH DESCRIPTION
+.LP
+.BR ookbricks ()
+reports the total number of bricks in a dataset.  This is a simple calculation
+based on the total number of voxels and the brick size, but Ook it can be nice
+to only need to pass around the
+.IR struct\ ookfile
+and query metadata as needed.
+
+.SH "RETURN VALUE"
+.BR ookbricks ()
+returns the total number of bricks in a dataset.
+
+.SH ERRORS
+No errors are defined.
+
+.SH "SEE ALSO"
+
+.BR ookread (3),
+.BR ookcreate (3)

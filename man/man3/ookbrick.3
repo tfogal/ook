@@ -1,0 +1,53 @@
+.TH OOKBRICK 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookbrick \- read a brick from an ookfile
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "int ookbrick(const struct ookfile* " of ", size_t " bid ", void* " data );
+.fi
+.SH DESCRIPTION
+.LP
+.BR ookbrick ()
+reads a brick from the
+.I of
+ookfile into the memory pointer to by
+.IR data .
+The brick to read is described by the
+.I bid
+brick ID.  Brick IDs start at 0 and increment until
+.BR ookbricks () - 1,
+layed out in scanline order.  That is, brick ID 0 refers to the brick at
+coordinate
+.BR {0,0,0} ,
+brick ID 1 refers to
+.BR {1,0,0} ,
+and so on, until the maximum number of bricks in X is reached.  At that point,
+the next brick is
+.BR {0,1,0} ,
+and the count continues in this manner.  The 1-dimensional brick ID given to
+.BR ookbrick ()
+could be calculated from the 3-dimensional brick index by the equation:
+.BR z*ROWS*COLS+y*COLS+x .
+
+.SH "RETURN VALUE"
+.BR ookbrick ()
+returns 0 on success and a nonzero value on error.
+
+.SH ERRORS
+.TP
+.B EINVAL
+The given
+.IR of
+pointer does not point to a valid
+.I struct\ ookfile
+pointer, or
+.I data
+is not a valid pointer.
+
+.SH "SEE ALSO"
+
+.BR ookread (3),
+.BR ookcreate (3),
+.BR ookbricksize (3)

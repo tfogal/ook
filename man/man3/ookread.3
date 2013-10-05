@@ -1,0 +1,63 @@
+.TH OOKREAD 3 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ookread \- open a file for reading
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "struct ookfile* ookread(struct io " interface ", const char* " filename \
+", "
+.BI "                        const uint64_t " voxels[3] ", "
+.BI "                        const size_t " bricksize[3] ", "
+.BI "                        const enum OOKTYPE " type ", "
+.BI "                        const size_t " components );
+.fi
+
+.SH DESCRIPTION
+.LP
+ookread gives back a
+.IR struct\ ookfile ,
+which is used in basically all other Ook function calls.  It allows only
+read access to a file.
+.LP
+The 
+.I interface
+option gives the IO interface to use; see
+.BR io-interface(7).
+.I filename
+is the filename to read.  The number of voxels in the dataset must be given in
+.IR voxels .
+.I bricksize
+is the desired size of the bricks in the volume.  Note this must make sense for
+the given volume; one cannot have larger bricks than the volume itself.
+.I type
+is the primitive type of the data; Ook uses this and
+.I components
+to figure out how big each element is.
+
+.SH "RETURN VALUE"
+On success,
+.BR ookread ()
+returns a pointer to an opaque structure describing the file.  On
+error, NULL is returned and
+.I errno
+is set appropriately.
+
+.SH ERRORS
+In general, an exhaustive listing is impossible;
+.BR ookread ()
+can fail for any of the reasons that
+.IR interface 's
+.I open
+method can fail.
+.TP
+.B EINVAL
+Brick size is larger than volume size.
+.TP
+.B ENOMEM
+No memory available to create opaque structure.
+
+.SH "SEE ALSO"
+
+.BR io-interface (7),
+.BR ookcreate (3)
