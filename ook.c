@@ -84,8 +84,9 @@ ookread(struct io iop, const char* fn, const uint64_t voxels[3],
   of->fd = iop.open(fn, OOK_RDONLY, md);
 
   if(of->fd == NULL) {
+    const int err = errno;
     free(of);
-    errno = -EINVAL;
+    errno = -err;
     return NULL;
   }
   memcpy(of->volsize, voxels, sizeof(uint64_t)*3);
