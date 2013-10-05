@@ -48,7 +48,7 @@ static void bidxto3d(const size_t id, const size_t layout[3], size_t brick[3]);
 typedef int (rwop)(void* fd, const off_t offset, const size_t len, void* buf);
 /** identifies the location of data within the larger set, and moves data
  * between the two places. */
-static void srcop(rwop* op, struct ookfile* of, size_t id, void* buffer);
+static void srcop(rwop* op, const struct ookfile* of, size_t id, void* buffer);
 
 bool
 ookinit()
@@ -113,7 +113,7 @@ ookmaxbricksize(const struct ookfile* of, size_t bs[3])
 
 /* copies data from the appropriate part of the file into 'target'. */
 int
-ookbrick(struct ookfile* of, size_t id, void* target)
+ookbrick(const struct ookfile* of, size_t id, void* target)
 {
   errno = 0;
   srcop(of->iop.read, of, id, target);
@@ -167,7 +167,7 @@ ookcreate(struct io iop, const char* filename,
 }
 
 void
-ookbricksize(struct ookfile* of, const size_t id, size_t bsize[3])
+ookbricksize(const struct ookfile* of, const size_t id, size_t bsize[3])
 {
   const double nbricks[3] = {
     of->volsize[0] / of->bricksize[0],
@@ -255,7 +255,7 @@ bidxto3d(const size_t id, const size_t layout[3], size_t brick[3])
 /** identifies the location of data within the larger set, and moves data
  * between the two places. */
 static void
-srcop(rwop* op, struct ookfile* of, size_t id, void* buffer)
+srcop(rwop* op, const struct ookfile* of, size_t id, void* buffer)
 {
   size_t bsize[3];
   ookbricksize(of, id, bsize);
