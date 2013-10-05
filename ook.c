@@ -63,16 +63,17 @@ struct ookfile*
 ookread(struct io iop, const char* fn, const uint64_t voxels[3],
         const size_t bsize[3], const enum OOKTYPE type, const size_t components)
 {
+  if(fn == NULL) { errno = EINVAL; return NULL; }
   /* bricks can't be larger than data size. */
   if(bsize[0] > voxels[0] ||
      bsize[1] > voxels[1] ||
      bsize[2] > voxels[2]) {
-    errno = -EINVAL;
+    errno = EINVAL;
     return NULL;
   }
   struct ookfile* of = calloc(1, sizeof(struct ookfile));
   if(of == NULL) {
-    errno = -ENOMEM;
+    errno = ENOMEM;
     return NULL;
   }
   of->iop = iop;
@@ -86,7 +87,7 @@ ookread(struct io iop, const char* fn, const uint64_t voxels[3],
   if(of->fd == NULL) {
     const int err = errno;
     free(of);
-    errno = -err;
+    errno = err;
     return NULL;
   }
   memcpy(of->volsize, voxels, sizeof(uint64_t)*3);
@@ -99,6 +100,7 @@ ookread(struct io iop, const char* fn, const uint64_t voxels[3],
 size_t
 ookbricks(const struct ookfile* ook)
 {
+  if(ook == NULL) { errno = EINVAL; return 0; }
   size_t nbricks[3];
   blayout(ook, nbricks);
   return nbricks[0] * nbricks[1] * nbricks[2];
@@ -123,6 +125,7 @@ ookbrick(const struct ookfile* of, size_t id, void* target)
 void
 ookdimensions(const struct ookfile* of, uint64_t voxels[3])
 {
+  if(of == NULL) { errno = EINVAL; return; }
   memcpy(voxels, of->volsize, sizeof(uint64_t)*3);
 }
 
@@ -131,16 +134,17 @@ ookcreate(struct io iop, const char* filename,
           const uint64_t dims[3], const size_t bsize[3],
           enum OOKTYPE type, size_t components)
 {
+  if(filename == NULL) { errno = EINVAL; return NULL; }
   /* bricks can't be larger than data size. */
   if(bsize[0] > dims[0] ||
      bsize[1] > dims[1] ||
      bsize[2] > dims[2]) {
-    errno = -EINVAL;
+    errno = EINVAL;
     return NULL;
   }
   struct ookfile* of = calloc(1, sizeof(struct ookfile));
   if(of == NULL) {
-    errno = -ENOMEM;
+    errno = ENOMEM;
     return NULL;
   }
   of->iop = iop;
@@ -151,7 +155,7 @@ ookcreate(struct io iop, const char* filename,
   of->fd = iop.open(filename, OOK_RDWR, md);
   if(of->fd == NULL) {
     free(of);
-    errno = -EINVAL;
+    errno = EINVAL;
     return NULL;
   }
   memcpy(of->volsize, dims, sizeof(uint64_t)*3);
@@ -169,6 +173,7 @@ ookcreate(struct io iop, const char* filename,
 void
 ookbricksize(const struct ookfile* of, const size_t id, size_t bsize[3])
 {
+  if(of == NULL) { errno = EINVAL; return; }
   const double nbricks[3] = {
     of->volsize[0] / of->bricksize[0],
     of->volsize[1] / of->bricksize[1],
@@ -197,6 +202,7 @@ ookwrite(struct ookfile* of, const size_t id, const void* from)
 int
 ookclose(struct ookfile* of)
 {
+  if(of == NULL) { return EINVAL; }
   int errcode = of->iop.close(of->fd);
   free(of);
   return errcode;
@@ -207,6 +213,7 @@ ookclose(struct ookfile* of)
 static void
 blayout(const struct ookfile* of, size_t nbricks[3])
 {
+  assert(of != NULL);
   assert(of->volsize[0] >= of->bricksize[0]);
   assert(of->volsize[1] >= of->bricksize[1]);
   assert(of->volsize[2] >= of->bricksize[2]);
@@ -257,6 +264,7 @@ bidxto3d(const size_t id, const size_t layout[3], size_t brick[3])
 static void
 srcop(rwop* op, const struct ookfile* of, size_t id, void* buffer)
 {
+  assert(op);
   if(of == NULL || buffer == NULL) { errno = EINVAL; return; }
 
   size_t bsize[3];
