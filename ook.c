@@ -257,6 +257,8 @@ bidxto3d(const size_t id, const size_t layout[3], size_t brick[3])
 static void
 srcop(rwop* op, const struct ookfile* of, size_t id, void* buffer)
 {
+  if(of == NULL || buffer == NULL) { errno = EINVAL; return; }
+
   size_t bsize[3];
   ookbricksize(of, id, bsize);
 
