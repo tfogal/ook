@@ -1,0 +1,287 @@
+.TH IO-INTERFACE 7 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+io-interface \- overview of how Ook's io-interfaces work
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "enum OOKMODE { OOK_RDONLY, OOK_RDWR };"
+.BI "struct metadata {"
+.BI "  uint64_t voxels[3];"
+.BI "  size_t components;"
+.BI "  size_t width;"
+.BI "};"
+.BI "typedef void* (" opener ")(const char* " fn ","
+.BI "                       const enum OOKMODE " mode ","
+.BI "                       struct metadata " md ");"
+.BI "typedef int (" reader ")(void* " fd ", const off_t " offset ", "
+.BI "                     const size_t " len ", void* " buf ");"
+.BI "typedef int (" writer ")(void* " fd ", const off_t " offset ","
+.BI "                     const size_t " len ", const void* " buf ");"
+.BI "typedef int (" closer ")(void*" fd ");"
+.BI "typedef void (" prealloc ")(void* " fd ", off_t " len ");"
+.BI "struct io {"
+.BI "  opener* open;"
+.BI "  reader* read;"
+.BI "  writer* write;"
+.BI "  closer* close;"
+.BI "  prealloc* preallocate;"
+.BI "};"
+.BI "extern struct io StdCIO;"
+.fi
+.SH DESCRIPTION
+.LP
+An Ook io-interface provides a contiguous binary stream of the
+underlying data it allows access to.
+.LP
+All data access in Ook goes through the functions pointed to by the
+.IR "struct io"
+members.  For simple raw data, these functions can be a thin forwarding layer
+that just calls the underlying operating system APIs;
+.I StdCIO
+is exactly such a wrapper around C's
+.IR fopen (3),
+.IR fread (3),
+.IR fclose (3),
+etc. calls.  However, the interface could abstract a more complex
+data acquisition scheme, such as a set of image files, a database
+connection, or a server application that accesses data over a socket.
+.LP
+The abstraction that an
+.I io-interface
+provides is simply that of a large, contiguously-stored data file.  If
+the resource cannot provide this abstraction, it is
+not a good fit for Ook.
+.LP
+Offsets and lengths in the
+.I io-interface
+always refer to
+.BR bytes ,
+not elements.  During the time of an
+.I opener
+call, the interface is provided with some metadata describing the underlying
+data type.  However, the intent is
+that this is purely for verification and indexing purposes; many interfaces
+will not need to store this information.
+
+.SH FUNCTIONS
+.LP
+An Ook interface is comprised of a series of function pointers---there
+is no data exposed.  Some functions are labelled
+.BR Optional .
+You may leave these functions NULL, at the cost of some functionality.  For
+example, a missing
+.B reader
+implementation will cause the
+.BR ookread (3)
+call to fail.
+.LP
+The functions to implement are:
+.TP
+.BR opener .
+.BR Required .
+Provides access to the resource.  Implementations should allocate internal
+resources here.  The function should verify that the resource exists during
+this call.  the implementation
+should verify that the given metadata matches what is available in the
+resource, if possible.  The pointer returned is an opaque identifier;
+Ook will pass it to the other
+.I io-interface
+functions (generally as the first argument), but otherwise does nothing to it.
+Any internal state your interface needs should be contained in the memory
+pointed to by the returned pointer.
+.TP
+.BR reader .
+.BR Optional .
+This is how data are accessed.  The first argument,
+.IR fd ,
+is (despite the name) not (necessarily) a file descriptor, but a pointer to
+whatever your
+.B opener
+call returned.  You can assume this pointer is non-NULL.  The
+.I offset
+parameter gives the
+.B byte
+offset of the data to be read.
+.I len
+provides the number of
+.B bytes
+to read starting at
+.IR offset .
+.I buf
+is where the data should be copied to.  You should assume
+.I buf
+is non-NULL and that it is large enough to hold 
+.I len
+bytes of data.
+
+.TP
+.BR writer .
+.BR Optional .
+The
+.BR writer
+function is the opposite of the
+.B reader
+function: it copies data from a user-supplied buffer into the resource provided
+by the interface. Argument
+.I fd
+is a pointer to
+whatever your
+.B opener
+call returned.  You can assume this pointer is non-NULL.  The
+.I offset
+parameter gives the
+.B byte
+offset of the data to be read.
+.I len
+provides the number of
+.B bytes
+to read starting at
+.IR offset .
+.I buf
+is where the data are copied from.  You should assume that
+.I buf
+is non-NULL and points to valid memory at least
+.I len
+bytes long.
+.TP
+.BR closer .
+.BR Required .
+The
+.B closer
+function indicates access to the resource is no longer required.
+Implementations should use this opportunity to finish pending writes and
+deallocate any internally-defined memory.  It is implementation-defined whether
+or not the
+.B closer
+function actually flushes data through to permanent storage.
+.TP
+.BR prealloc .
+.BR Optional .
+The
+.B prealloc
+function indicates that a range of data values will be written to by this
+process.  Some implementations may want to use this information to optimize
+writes.  Implementations may omit implementations for
+.B prealloc
+with no loss in functionality; it is provided purely for optimization purposes.
+
+.SH "RETURN VALUES and ERRORS"
+.LP
+Each
+.B io-interface
+function has unique return value semantics.
+.TP
+.B opener
+should return a pointer to internally-created state.  This pointer will be
+passed to the other
+.B io-interface
+functions.  Should an error occur,
+.B opener
+functions should return NULL.
+.TP
+.B reader
+should return 0 on success, and a non-zero error code on error.  Note that this
+is
+.BR not
+the number of bytes read!  In Ook, a read is either complete or it fails;
+partial reads should return an error code.
+.TP
+.B writer
+should return 0 on success, and a non-zero error code on error.  Note that this
+is
+.BR not
+the number of bytes written!  Partial writes should return an error code.
+.TP
+.B closer
+should return 0 on success, and a non-zero error code on error.
+.TP
+.B prealloc
+has no return value.
+
+.SH EXAMPLE
+.LP
+Below is the complete implementation of the
+.IR "StdCIO io-interface" .
+This implementation assumes the file consists of a large, contiguous array of
+bytes with no header or metadata information.  Thus, offsets translate directly
+and the interface is essentially just a wrapper around the standard C library's
+IO functions.
+
+.nf
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include "io-interface.h"
+
+static void*
+stdc_open(const char* fn, const enum OOKMODE mode, struct metadata md)
+{
+  (void) md;
+  const char* access = "rb";
+  if(mode == OOK_RDWR) { access = "wb"; }
+  FILE* fp = fopen(fn, access);
+
+	if(NULL == fp) {
+    errno = -EINVAL;
+    return NULL;
+	}
+  return fp;
+}
+
+static int
+stdc_read(void* fd, const off_t offset, const size_t len, void* buf)
+{
+  FILE* fp = (FILE*) fd;
+  if(fseek(fp, offset, SEEK_SET) != 0) {
+    return errno;
+  }
+  if(fread(buf, 1, len, fp) != len) {
+    return errno;
+  }
+  return 0;
+}
+
+static int
+stdc_write(void* fd, const off_t offset, const size_t len,
+           const void* buf)
+{
+  FILE* fp = (FILE*) fd;
+  if(fseek(fp, offset, SEEK_SET) != 0) {
+    return errno;
+  }
+  if(fwrite(buf, 1, len, fp) != len) {
+    return errno;
+  }
+  return 0;
+}
+
+static int
+stdc_close(void* fd)
+{
+  FILE* fp = (FILE*) fd;
+  if(fclose(fp) != 0) {
+    return errno;
+  }
+  return 0;
+}
+
+struct io StdCIO = {
+  .open = stdc_open,
+  .read = stdc_read,
+  .write = stdc_write,
+  .close = stdc_close,
+  .preallocate = NULL
+};
+.fi
+.SH "SEE ALSO"
+
+.BR ookread (3),
+.BR ookcreate (3),
+.BR ookbrick (3),
+.BR ookwrite (3),
+.BR ookclose (3),
+.BR fopen (3),
+.BR fread (3),
+.BR fclose (3)
