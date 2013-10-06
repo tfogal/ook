@@ -1,0 +1,122 @@
+<!-- Creator     : groff version 1.22.1 -->
+<!-- CreationDate: Sun Oct  6 15:23:00 2013 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>OOKWRITE</title>
+
+</head>
+<body>
+
+<h1 align="center">OOKWRITE</h1>
+
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#RETURN VALUE">RETURN VALUE</a><br>
+<a href="#ERRORS">ERRORS</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
+
+<hr>
+
+
+<h2>NAME
+<a name="NAME"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">ookwrite
+&minus; write a brick into an Ook file.</p>
+
+<h2>SYNOPSIS
+<a name="SYNOPSIS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>#include
+&lt;ook.h&gt;</b></p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>void
+ookwrite(struct ookfile*</b> <i>of</i><b>, const size_t</b>
+<i>bid</i><b>, <br>
+const void*</b> <i>data</i><b>);</b></p>
+
+<h2>DESCRIPTION
+<a name="DESCRIPTION"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ookwrite</b>()
+writes a brick into the <i>of</i> ookfile from the memory
+pointer to by <i>data</i>. The brick to read is described by
+the <i>bid</i> brick ID. Brick IDs start at 0 and increment
+until <b>ookbricks</b>()<b>-</b>1, layed out in scanline
+order. That is, brick ID 0 refers to the brick at coordinate
+<b>{0,0,0}</b>, brick ID 1 refers to <b>{1,0,0}</b>, and so
+on, until the maximum number of bricks in X is reached. At
+that point, the next brick is <b>{0,1,0}</b>, and the count
+continues in this manner. The 1-dimensional brick ID given
+to <b>ookwrite</b>() could be calculated from the
+3-dimensional brick index by the equation:
+<b>z*ROWS*COLS+y*COLS+x</b>.</p>
+
+<p style="margin-left:11%; margin-top: 1em">It is
+implementation-defined (see <b>io-interface(7)</b>) whether
+or not data are before an <b>ookwrite</b>() call returns.
+Other processes may see inconsistent views of the file
+unless they are serialized by an <b>ookclose</b>().</p>
+
+<h2>RETURN VALUE
+<a name="RETURN VALUE"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ookwrite</b>()
+does not return anything. However, should an error occur it
+will set <i>errno</i>.</p>
+
+<h2>ERRORS
+<a name="ERRORS"></a>
+</h2>
+
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="9%">
+
+
+<p style="margin-top: 1em"><b>EINVAL</b></p></td>
+<td width="2%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">The given <i>of</i> pointer does
+not point to a valid <i>struct&nbsp;ookfile</i> pointer, or
+<i>data</i> is not a valid pointer.</p></td></tr>
+</table>
+
+<h2>SEE ALSO
+<a name="SEE ALSO"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ookcreate</b>(3),
+<b>ookbrick</b>(3), <b>ookclose</b>(3)</p>
+<hr>
+</body>
+</html>

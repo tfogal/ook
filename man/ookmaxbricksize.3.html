@@ -1,0 +1,115 @@
+<!-- Creator     : groff version 1.22.1 -->
+<!-- CreationDate: Sun Oct  6 15:23:00 2013 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>OOKMAXBRICKSIZE</title>
+
+</head>
+<body>
+
+<h1 align="center">OOKMAXBRICKSIZE</h1>
+
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#RETURN VALUE">RETURN VALUE</a><br>
+<a href="#ERRORS">ERRORS</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
+
+<hr>
+
+
+<h2>NAME
+<a name="NAME"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em">ookmaxbricksize
+&minus; reports the brick size used when initializing a
+file.</p>
+
+<h2>SYNOPSIS
+<a name="SYNOPSIS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>#include
+&lt;ook.h&gt;</b></p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>void
+ookmaxbricksize(const struct ookfile*</b> <i>of</i><b>,
+size_t</b> <i>bsize[3]</i><b>);</b></p>
+
+<h2>DESCRIPTION
+<a name="DESCRIPTION"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ookmaxbricksize</b>()
+reports the brick size input in the previous
+<b>ookread(3)</b> or <b>ookcreate(3)</b> call. The
+<i>bsize</i> argument is filled with the brick size.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Note that any
+individual brick may be smaller than this brick size. In
+particular, Ook creates tiny bricks on the edges of data
+sets to account for the case that the brick size does not
+evenly divide the domain. However, Ook guarantees that no
+brick will be larger than the size return from
+<b>ookmaxbricksize</b>().</p>
+
+<h2>RETURN VALUE
+<a name="RETURN VALUE"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ookmaxbricksize</b>()
+technically returns nothing. Instead, it fills the
+<i>bsize</i> argument.</p>
+
+<h2>ERRORS
+<a name="ERRORS"></a>
+</h2>
+
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="9%">
+
+
+<p style="margin-top: 1em"><b>EINVAL</b></p></td>
+<td width="2%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">The given <i>of</i> pointer does
+not point to a valid <i>struct&nbsp;ookfile</i> pointer.</p></td></tr>
+</table>
+
+<h2>SEE ALSO
+<a name="SEE ALSO"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ookread</b>(3),
+<b>ookcreate</b>(3), <b>ookbricksize</b>(3)</p>
+<hr>
+</body>
+</html>
