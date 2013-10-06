@@ -8,7 +8,7 @@ static void*
 stdc_open(const char* fn, const enum OOKMODE mode, struct metadata md)
 {
   (void) md;
-  const char* access = "r";
+  const char* access = "rb";
   if(mode == OOK_RDWR) { access = "wb"; }
   FILE* fp = fopen(fn, access);
 
