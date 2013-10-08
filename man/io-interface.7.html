@@ -3,7 +3,7 @@
 </HEAD><BODY>
 <H1>IO-INTERFACE</H1>
 Section: Ook Programmer's Manual (7)<BR>Updated: 2013-10-03<BR><A HREF="#index">Index</A>
-<HR>
+<A HREF="../index.html">Return to Main Contents</A><HR>
 
 <A NAME="lbAB">&nbsp;</A>
 <H2>NAME</H2>
@@ -16,14 +16,9 @@ io-interface - overview of how Ook's io-interfaces work
 <B>#include &lt;<A HREF="file:///usr/include/ook.h">ook.h</A>&gt;</B>
 
 <B>enum OOKMODE { OOK_RDONLY, OOK_RDWR };</B>
-<B>struct metadata {</B>
-<B>  uint64_t voxels[3];</B>
-<B>  size_t components;</B>
-<B>  size_t width;</B>
-<B>};</B>
 <B>typedef void* (</B><I>opener</I><B>)(const char* </B><I>fn</I><B>,</B>
 <B>                       const enum OOKMODE </B><I>mode</I><B>,</B>
-<B>                       struct metadata </B><I>md</I><B>);</B>
+<B>                       const void* </B><I>state</I><B>);</B>
 <B>typedef int (</B><I>reader</I><B>)(void* </B><I>fd</I><B>, const off_t </B><I>offset</I><B>, </B>
 <B>                     const size_t </B><I>len</I><B>, void* </B><I>buf</I><B>);</B>
 <B>typedef int (</B><I>writer</I><B>)(void* </B><I>fd</I><B>, const off_t </B><I>offset</I><B>,</B>
@@ -36,6 +31,7 @@ io-interface - overview of how Ook's io-interfaces work
 <B>  writer* write;</B>
 <B>  closer* close;</B>
 <B>  prealloc* preallocate;</B>
+<B>  void* state;</B>
 <B>};</B>
 <B>extern struct io StdCIO;</B>
 </PRE>
@@ -57,11 +53,11 @@ that just calls the underlying operating system APIs;
 <I>StdCIO</I>
 
 is exactly such a wrapper around C's
-<I><A HREF="/cgi-bin/man/man2html?3+fopen">fopen</A></I>(3),
+<I><A HREF="/man/fopen.3.html">fopen</A></I>(3),
 
-<I><A HREF="/cgi-bin/man/man2html?3+fread">fread</A></I>(3),
+<I><A HREF="/man/fread.3.html">fread</A></I>(3),
 
-<I><A HREF="/cgi-bin/man/man2html?3+fclose">fclose</A></I>(3),
+<I><A HREF="/man/fclose.3.html">fclose</A></I>(3),
 
 etc. calls.  However, the interface could abstract a more complex
 data acquisition scheme, such as a set of image files, a database
@@ -82,13 +78,35 @@ Offsets and lengths in the
 always refer to
 <B>bytes</B>,
 
-not elements.  During the time of an
+not elements.
+<P>
+
+When the
 <I>opener</I>
 
-call, the interface is provided with some metadata describing the underlying
-data type.  However, the intent is
-that this is purely for verification and indexing purposes; many interfaces
-will not need to store this information.
+function is called, the final argument is the
+<I>io-interface</I>'s
+
+<B>state</B>
+
+member.  Many interfaces do not require state, and should therefore ignore this
+parameter.  Note that the
+<B>state</B>
+
+parameter is only given to the
+<I>opener</I>
+
+function; if the implementation requires state information during other
+operations (e.g. in
+<I>reader</I>),
+
+then it should copy the information from the
+<B>state</B>
+
+variable into whatever memory it returns from the
+<I>opener</I>
+
+call.
 <P>
 <A NAME="lbAE">&nbsp;</A>
 <H2>FUNCTIONS</H2>
@@ -104,7 +122,7 @@ example, a missing
 <B>reader</B>
 
 implementation will cause the
-<B><A HREF="ookread.3.html">ookread</A></B>(3)
+<B><A HREF="/man/ookread.3.html">ookread</A></B>(3)
 
 call to fail.
 <P>
@@ -300,16 +318,16 @@ and the interface is essentially just a wrapper around the standard C library's
 IO functions.
 <P>
 <PRE>
-#include &lt;errno.h&gt;
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-#include &lt;sys/types.h&gt;
+#include &lt;<A HREF="file:///usr/include/errno.h">errno.h</A>&gt;
+#include &lt;<A HREF="file:///usr/include/stdio.h">stdio.h</A>&gt;
+#include &lt;<A HREF="file:///usr/include/stdlib.h">stdlib.h</A>&gt;
+#include &lt;<A HREF="file:///usr/include/sys/types.h">sys/types.h</A>&gt;
 #include &quot;io-interface.h&quot;
 
 static void*
-stdc_open(const char* fn, const enum OOKMODE mode, struct metadata md)
+stdc_open(const char* fn, const enum OOKMODE mode, const void* state)
 {
-  (void) md;
+  (void) state;
   const char* access = &quot;rb&quot;;
   if(mode == OOK_RDWR) { access = &quot;wb&quot;; }
   FILE* fp = fopen(fn, access);
@@ -371,21 +389,21 @@ struct io StdCIO = {
 <H2>SEE ALSO</H2>
 
 <P>
-<B><A HREF="ookread.3.html">ookread</A></B>(3),
+<B><A HREF="/man/ookread.3.html">ookread</A></B>(3),
 
-<B><A HREF="ookcreate.3.html">ookcreate</A></B>(3),
+<B><A HREF="/man/ookcreate.3.html">ookcreate</A></B>(3),
 
-<B><A HREF="ookbrick.3.html">ookbrick</A></B>(3),
+<B><A HREF="/man/ookbrick.3.html">ookbrick</A></B>(3),
 
-<B><A HREF="ookwrite.3.html">ookwrite</A></B>(3),
+<B><A HREF="/man/ookwrite.3.html">ookwrite</A></B>(3),
 
-<B><A HREF="ookclose.3.html">ookclose</A></B>(3),
+<B><A HREF="/man/ookclose.3.html">ookclose</A></B>(3),
 
-<B>fopen</B>(3),
+<B><A HREF="/man/fopen.3.html">fopen</A></B>(3),
 
-<B>fread</B>(3),
+<B><A HREF="/man/fread.3.html">fread</A></B>(3),
 
-<B>fclose</B>(3)
+<B><A HREF="/man/fclose.3.html">fclose</A></B>(3)
 
 <P>
 
@@ -402,8 +420,8 @@ struct io StdCIO = {
 </DL>
 <HR>
 This document was created by
-<A HREF="/cgi-bin/man/man2html">man2html</A>,
+<A HREF="http://tfogal.github.io/cgi-bin/man/man2html">man2html</A>,
 using the manual pages.<BR>
-Time: 21:24:36 GMT, October 06, 2013
+Time: 02:54:01 GMT, October 08, 2013
 </BODY>
 </HTML>

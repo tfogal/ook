@@ -1,181 +1,172 @@
-<!-- Creator     : groff version 1.22.1 -->
-<!-- CreationDate: Sun Oct  6 15:23:00 2013 -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta name="generator" content="groff -Thtml, see www.gnu.org">
-<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
-<meta name="Content-Style" content="text/css">
-<style type="text/css">
-       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       h1      { text-align: center }
-</style>
-<title>OOKBRICKSIZE</title>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of OOKBRICKSIZE</TITLE>
+</HEAD><BODY>
+<H1>OOKBRICKSIZE</H1>
+Section: Ook Programmer's Manual (3)<BR>Updated: 2013-10-03<BR><A HREF="#index">Index</A>
+<A HREF="../index.html">Return to Main Contents</A><HR>
 
-</head>
-<body>
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
 
-<h1 align="center">OOKBRICKSIZE</h1>
+ookbricksize - reports the size of the given brick.
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
 
-<a href="#NAME">NAME</a><br>
-<a href="#SYNOPSIS">SYNOPSIS</a><br>
-<a href="#DESCRIPTION">DESCRIPTION</a><br>
-<a href="#RETURN VALUE">RETURN VALUE</a><br>
-<a href="#ERRORS">ERRORS</a><br>
-<a href="#EXAMPLE">EXAMPLE</a><br>
-<a href="#SEE ALSO">SEE ALSO</a><br>
+<PRE>
+<B>#include &lt;<A HREF="file:///usr/include/errno.h">errno.h</A>&gt;</B>
+<B>#include &lt;<A HREF="file:///usr/include/ook.h">ook.h</A>&gt;</B>
 
-<hr>
+<B>void ookbricksize(const struct ookfile* </B><I>of</I><B>, const size_t </B><I>id</I><B>, </B>
+<B>                  size_t </B><I>bsize</I><B>[3]);</B>
+</PRE>
 
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
 
-<h2>NAME
-<a name="NAME"></a>
-</h2>
+<P>
 
+<B>ookbricksize</B>()
 
-<p style="margin-left:11%; margin-top: 1em">ookbricksize
-&minus; reports the size of the given brick.</p>
+reports the brick size for the given brick.  The
+<I>bsize</I>
 
-<h2>SYNOPSIS
-<a name="SYNOPSIS"></a>
-</h2>
+argument is filled with the number of voxels the brick contains.
+<P>
 
+It is rare for all bricks in a dataset to be uniformly sized.  If the
+brick size does not evenly divide the domain size, a dataset will end
+up with partial bricks.  Therefore, it is necessary to query the brick
+size of each brick in order to ensure you do not read too much data out
+of it.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>RETURN VALUE</H2>
 
-<p style="margin-left:11%; margin-top: 1em"><b>#include
-&lt;errno.h&gt; <br>
-#include &lt;ook.h&gt;</b></p>
+<B>ookbricksize</B>()
 
-<p style="margin-left:11%; margin-top: 1em"><b>void
-ookbricksize(const struct ookfile*</b> <i>of</i><b>, const
-size_t</b> <i>id</i><b>, <br>
-size_t</b> <i>bsize</i><b>[3]);</b></p>
+technically returns nothing.  Instead, it fills the
+<I>bsize</I>
 
-<h2>DESCRIPTION
-<a name="DESCRIPTION"></a>
-</h2>
+argument.  On error,
+<I>errno</I>
 
+is set and the contents of
+<I>bsize</I>
 
+are undefined.
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<H2>ERRORS</H2>
 
-<p style="margin-left:11%; margin-top: 1em"><b>ookbricksize</b>()
-reports the brick size for the given brick. The <i>bsize</i>
-argument is filled with the number of voxels the brick
-contains.</p>
+<DL COMPACT>
+<DT><B>EINVAL</B>
 
-<p style="margin-left:11%; margin-top: 1em">It is rare for
-all bricks in a dataset to be uniformly sized. If the brick
-size does not evenly divide the domain size, a dataset will
-end up with partial bricks. Therefore, it is necessary to
-query the brick size of each brick in order to ensure you do
-not read too much data out of it.</p>
+<DD>
+The given
+<I>of</I>
 
-<h2>RETURN VALUE
-<a name="RETURN VALUE"></a>
-</h2>
+pointer does not point to a valid
+<I>struct&nbsp;ookfile</I>
 
+pointer, or
+<I>id</I>
 
+is not a valid brick index.
+<P>
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>EXAMPLE</H2>
 
-<p style="margin-left:11%; margin-top: 1em"><b>ookbricksize</b>()
-technically returns nothing. Instead, it fills the
-<i>bsize</i> argument. On error, <i>errno</i> is set and the
-contents of <i>bsize</i> are undefined.</p>
+<P>
 
-<h2>ERRORS
-<a name="ERRORS"></a>
-</h2>
+The following C99 function reports the
+<B>voxel</B>
 
+indices which satisfy the passed predicate.  The input data is assumed to be
+single-component
+<B>uint16_t</B>
 
-<table width="100%" border="0" rules="none" frame="void"
-       cellspacing="0" cellpadding="0">
-<tr valign="top" align="left">
-<td width="11%"></td>
-<td width="9%">
+data.
+<PRE>
 
+typedef bool (predicate)(const uint16_t);
+void
+search(const struct ookfile* of, predicate* p)
+{
+  size_t mbs[3];
+  ookmaxbricksize(of, mbs);
 
-<p style="margin-top: 1em"><b>EINVAL</b></p></td>
-<td width="2%"></td>
-<td width="78%">
+  uint16_t* data = malloc(sizeof(uint16_t) * mbs[0]*mbs[1]*mbs[2]);
 
+  size_t layout[3];
+  size_t bid[3];
+  size_t bsize[3];
+  ookbricks3(of, layout);
 
-<p style="margin-top: 1em">The given <i>of</i> pointer does
-not point to a valid <i>struct&nbsp;ookfile</i> pointer, or
-<i>id</i> is not a valid brick index.</p></td></tr>
-</table>
+  uint64_t nvoxels[3]; /* total number of voxels in dataset */
+  ookdimensions(of, nvoxels);
 
-<h2>EXAMPLE
-<a name="EXAMPLE"></a>
-</h2>
+  /* 3D loop to iterate over all bricks. */
+  for(bid[2] = 0; bid[2] &lt; layout[2]; ++bid[2]) {
+    for(bid[1] = 0; bid[1] &lt; layout[1]; ++bid[1]) {
+      for(bid[0] = 0; bid[0] &lt; layout[0]; ++bid[0]) {
+        ookbricksize3(of, bid, bsize);
+        ookbrick3(of, bid, data);
 
+        /* 3D loop to iterate over every voxel in a brick. */
+        for(size_t z=0; z &lt; bsize[2]; ++z) {
+          for(size_t y=0; y &lt; bsize[1]; ++y) {
+            for(size_t x=0; x &lt; bsize[0]; ++x) {
+              const size_t i = z*bsize[1]*bsize[0] + y*bsize[0] + x;
+              if(p(data[i])) {
+                /* need the index within the dataset, not brick */
+                const size_t vi[3] = { /* voxel index */
+                  (mbs[0] * bid[0]) + x,
+                  (mbs[1] * bid[1]) + y,
+                  (mbs[2] * bid[2]) + z
+                };
+                printf(&quot;voxel @ {%lu,%lu,%lu} passes,
+                       vi[0], vi[1], vi[2]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  free(data);
+}
+</PRE>
 
-<p style="margin-left:11%; margin-top: 1em">The following
-C99 function reports the <b>voxel</b> indices which satisfy
-the passed predicate. The input data is assumed to be
-single-component <b>uint16_t</b> data.</p>
+<P>
+<A NAME="lbAH">&nbsp;</A>
+<H2>SEE ALSO</H2>
 
-<p style="margin-left:11%; margin-top: 1em">typedef bool
-(predicate)(const uint16_t); <br>
-void <br>
-search(const struct ookfile* of, predicate* p) <br>
-{ <br>
-size_t mbs[3]; <br>
-ookmaxbricksize(of, mbs);</p>
+<P>
+<B><A HREF="/man/ookmaxbricksize.3.html">ookmaxbricksize</A></B>(3),
 
-<p style="margin-left:11%; margin-top: 1em">uint16_t* data
-= malloc(sizeof(uint16_t) * mbs[0]*mbs[1]*mbs[2]);</p>
+<B><A HREF="/man/ookread.3.html">ookread</A></B>(3),
 
-<p style="margin-left:11%; margin-top: 1em">size_t
-layout[3]; <br>
-size_t bid[3]; <br>
-size_t bsize[3]; <br>
-ookbricks3(of, layout);</p>
+<B><A HREF="/man/ookcreate.3.html">ookcreate</A></B>(3)
 
-<p style="margin-left:11%; margin-top: 1em">uint64_t
-nvoxels[3]; /* total number of voxels in dataset */ <br>
-ookdimensions(of, nvoxels);</p>
+<P>
 
-<p style="margin-left:11%; margin-top: 1em">/* 3D loop to
-iterate over all bricks. */ <br>
-for(bid[2] = 0; bid[2] &lt; layout[2]; ++bid[2]) { <br>
-for(bid[1] = 0; bid[1] &lt; layout[1]; ++bid[1]) { <br>
-for(bid[0] = 0; bid[0] &lt; layout[0]; ++bid[0]) { <br>
-ookbricksize3(of, bid, bsize); <br>
-ookbrick3(of, bid, data);</p>
-
-<p style="margin-left:11%; margin-top: 1em">/* 3D loop to
-iterate over every voxel in a brick. */ <br>
-for(size_t z=0; z &lt; bsize[2]; ++z) { <br>
-for(size_t y=0; y &lt; bsize[1]; ++y) { <br>
-for(size_t x=0; x &lt; bsize[0]; ++x) { <br>
-const size_t i = z*bsize[1]*bsize[0] + y*bsize[0] + x; <br>
-if(p(data[i])) { <br>
-/* need the index within the dataset, not brick */ <br>
-const size_t vi[3] = { /* voxel index */ <br>
-(mbs[0] * bid[0]) + x, <br>
-(mbs[1] * bid[1]) + y, <br>
-(mbs[2] * bid[2]) + z <br>
-}; <br>
-printf(&quot;voxel @ {%lu,%lu,%lu} passes0, <br>
-vi[0], vi[1], vi[2]); <br>
-} <br>
-} <br>
-} <br>
-} <br>
-} <br>
-} <br>
-} <br>
-free(data); <br>
-}</p>
-
-<h2>SEE ALSO
-<a name="SEE ALSO"></a>
-</h2>
-
-
-
-<p style="margin-left:11%; margin-top: 1em"><b>ookmaxbricksize</b>(3),
-<b>ookread</b>(3), <b>ookcreate</b>(3)</p>
-<hr>
-</body>
-</html>
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">RETURN VALUE</A><DD>
+<DT><A HREF="#lbAF">ERRORS</A><DD>
+<DT><A HREF="#lbAG">EXAMPLE</A><DD>
+<DT><A HREF="#lbAH">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://tfogal.github.io/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 02:54:01 GMT, October 08, 2013
+</BODY>
+</HTML>

@@ -1,114 +1,112 @@
-<!-- Creator     : groff version 1.22.1 -->
-<!-- CreationDate: Sun Oct  6 15:22:59 2013 -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta name="generator" content="groff -Thtml, see www.gnu.org">
-<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
-<meta name="Content-Style" content="text/css">
-<style type="text/css">
-       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       h1      { text-align: center }
-</style>
-<title>OOKBRICK</title>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of OOKBRICK</TITLE>
+</HEAD><BODY>
+<H1>OOKBRICK</H1>
+Section: Ook Programmer's Manual (3)<BR>Updated: 2013-10-03<BR><A HREF="#index">Index</A>
+<A HREF="../index.html">Return to Main Contents</A><HR>
 
-</head>
-<body>
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
 
-<h1 align="center">OOKBRICK</h1>
+ookbrick - read a brick from an ookfile
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
 
-<a href="#NAME">NAME</a><br>
-<a href="#SYNOPSIS">SYNOPSIS</a><br>
-<a href="#DESCRIPTION">DESCRIPTION</a><br>
-<a href="#RETURN VALUE">RETURN VALUE</a><br>
-<a href="#ERRORS">ERRORS</a><br>
-<a href="#SEE ALSO">SEE ALSO</a><br>
+<PRE>
+<B>#include &lt;<A HREF="file:///usr/include/ook.h">ook.h</A>&gt;</B>
 
-<hr>
+<B>int ookbrick(const struct ookfile* </B><I>of</I><B>, size_t </B><I>bid</I><B>, void* </B><I>data</I><B>);</B>
+</PRE>
 
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
 
-<h2>NAME
-<a name="NAME"></a>
-</h2>
+<P>
 
+<B>ookbrick</B>()
 
-<p style="margin-left:11%; margin-top: 1em">ookbrick
-&minus; read a brick from an ookfile</p>
+reads a brick from the
+<I>of</I>
 
-<h2>SYNOPSIS
-<a name="SYNOPSIS"></a>
-</h2>
+ookfile into the memory pointer to by
+<I>data</I>.
 
+The brick to read is described by the
+<I>bid</I>
 
-<p style="margin-left:11%; margin-top: 1em"><b>#include
-&lt;ook.h&gt;</b></p>
+brick ID.  Brick IDs start at 0 and increment until
+<B>ookbricks</B>()<B>-</B>1,
 
-<p style="margin-left:11%; margin-top: 1em"><b>int
-ookbrick(const struct ookfile*</b> <i>of</i><b>, size_t</b>
-<i>bid</i><b>, void*</b> <i>data</i><b>);</b></p>
+layed out in scanline order.  That is, brick ID 0 refers to the brick at
+coordinate
+<B>{0,0,0}</B>,
 
-<h2>DESCRIPTION
-<a name="DESCRIPTION"></a>
-</h2>
+brick ID 1 refers to
+<B>{1,0,0}</B>,
 
+and so on, until the maximum number of bricks in X is reached.  At that point,
+the next brick is
+<B>{0,1,0}</B>,
 
+and the count continues in this manner.  The 1-dimensional brick ID given to
+<B>ookbrick</B>()
 
-<p style="margin-left:11%; margin-top: 1em"><b>ookbrick</b>()
-reads a brick from the <i>of</i> ookfile into the memory
-pointer to by <i>data</i>. The brick to read is described by
-the <i>bid</i> brick ID. Brick IDs start at 0 and increment
-until <b>ookbricks</b>()<b>-</b>1, layed out in scanline
-order. That is, brick ID 0 refers to the brick at coordinate
-<b>{0,0,0}</b>, brick ID 1 refers to <b>{1,0,0}</b>, and so
-on, until the maximum number of bricks in X is reached. At
-that point, the next brick is <b>{0,1,0}</b>, and the count
-continues in this manner. The 1-dimensional brick ID given
-to <b>ookbrick</b>() could be calculated from the
-3-dimensional brick index by the equation:
-<b>z*ROWS*COLS+y*COLS+x</b>.</p>
+could be calculated from the 3-dimensional brick index by the equation:
+<B>z*ROWS*COLS+y*COLS+x</B>.
 
-<h2>RETURN VALUE
-<a name="RETURN VALUE"></a>
-</h2>
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>RETURN VALUE</H2>
 
+<B>ookbrick</B>()
 
+returns 0 on success and a nonzero value on error.
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<H2>ERRORS</H2>
 
-<p style="margin-left:11%; margin-top: 1em"><b>ookbrick</b>()
-returns 0 on success and a nonzero value on error.</p>
+<DL COMPACT>
+<DT><B>EINVAL</B>
 
-<h2>ERRORS
-<a name="ERRORS"></a>
-</h2>
+<DD>
+The given
+<I>of</I>
 
+pointer does not point to a valid
+<I>struct&nbsp;ookfile</I>
 
-<table width="100%" border="0" rules="none" frame="void"
-       cellspacing="0" cellpadding="0">
-<tr valign="top" align="left">
-<td width="11%"></td>
-<td width="9%">
+pointer, or
+<I>data</I>
 
+is not a valid pointer.
+<P>
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
 
-<p style="margin-top: 1em"><b>EINVAL</b></p></td>
-<td width="2%"></td>
-<td width="78%">
+<P>
+<B><A HREF="/man/ookread.3.html">ookread</A></B>(3),
 
+<B><A HREF="/man/ookcreate.3.html">ookcreate</A></B>(3),
 
-<p style="margin-top: 1em">The given <i>of</i> pointer does
-not point to a valid <i>struct&nbsp;ookfile</i> pointer, or
-<i>data</i> is not a valid pointer.</p></td></tr>
-</table>
+<B><A HREF="/man/ookbricksize.3.html">ookbricksize</A></B>(3)
 
-<h2>SEE ALSO
-<a name="SEE ALSO"></a>
-</h2>
+<P>
 
-
-
-<p style="margin-left:11%; margin-top: 1em"><b>ookread</b>(3),
-<b>ookcreate</b>(3), <b>ookbricksize</b>(3)</p>
-<hr>
-</body>
-</html>
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">RETURN VALUE</A><DD>
+<DT><A HREF="#lbAF">ERRORS</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://tfogal.github.io/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 02:54:01 GMT, October 08, 2013
+</BODY>
+</HTML>

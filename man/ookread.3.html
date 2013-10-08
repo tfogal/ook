@@ -1,138 +1,121 @@
-<!-- Creator     : groff version 1.22.1 -->
-<!-- CreationDate: Sun Oct  6 15:23:00 2013 -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta name="generator" content="groff -Thtml, see www.gnu.org">
-<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
-<meta name="Content-Style" content="text/css">
-<style type="text/css">
-       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       h1      { text-align: center }
-</style>
-<title>OOKREAD</title>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of OOKREAD</TITLE>
+</HEAD><BODY>
+<H1>OOKREAD</H1>
+Section: Ook Programmer's Manual (3)<BR>Updated: 2013-10-03<BR><A HREF="#index">Index</A>
+<A HREF="../index.html">Return to Main Contents</A><HR>
 
-</head>
-<body>
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
 
-<h1 align="center">OOKREAD</h1>
+ookread - open a file for reading
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
 
-<a href="#NAME">NAME</a><br>
-<a href="#SYNOPSIS">SYNOPSIS</a><br>
-<a href="#DESCRIPTION">DESCRIPTION</a><br>
-<a href="#RETURN VALUE">RETURN VALUE</a><br>
-<a href="#ERRORS">ERRORS</a><br>
-<a href="#SEE ALSO">SEE ALSO</a><br>
+<PRE>
+<B>#include &lt;<A HREF="file:///usr/include/ook.h">ook.h</A>&gt;</B>
 
-<hr>
+<B>struct ookfile* ookread(struct io </B><I>interface</I><B>, const char* </B><I>filename</I><B>, </B>
+<B>                        const uint64_t </B><I>voxels[3]</I><B>, </B>
+<B>                        const size_t </B><I>bricksize[3]</I><B>, </B>
+<B>                        const enum OOKTYPE </B><I>type</I><B>, </B>
+<B>                        const size_t </B><I>components</I><B>);</B>
+</PRE>
 
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
 
-<h2>NAME
-<a name="NAME"></a>
-</h2>
+<P>
 
+ookread gives back a
+<I>struct&nbsp;ookfile</I>,
 
-<p style="margin-left:11%; margin-top: 1em">ookread &minus;
-open a file for reading</p>
+which is used in basically all other Ook function calls.  It allows only
+read access to a file.
+<P>
 
-<h2>SYNOPSIS
-<a name="SYNOPSIS"></a>
-</h2>
+The 
+<I>interface</I>
 
+option gives the IO interface to use; see
+<B><A HREF="/man/io-interface.7.html">io-interface</A>(7).</B>
 
-<p style="margin-left:11%; margin-top: 1em"><b>#include
-&lt;ook.h&gt;</b></p>
+<I>filename</I>
 
-<p style="margin-left:11%; margin-top: 1em"><b>struct
-ookfile* ookread(struct io</b> <i>interface</i><b>, const
-char*</b> <i>filename</i><b>, <br>
-const uint64_t</b> <i>voxels[3]</i><b>, <br>
-const size_t</b> <i>bricksize[3]</i><b>, <br>
-const enum OOKTYPE</b> <i>type</i><b>, <br>
-const size_t</b> <i>components</i><b>);</b></p>
+is the filename to read.  The number of voxels in the dataset must be given in
+<I>voxels</I>.
 
-<h2>DESCRIPTION
-<a name="DESCRIPTION"></a>
-</h2>
+<I>bricksize</I>
 
+is the desired size of the bricks in the volume.  Note this must make sense for
+the given volume; one cannot have larger bricks than the volume itself.
+<I>type</I>
 
-<p style="margin-left:11%; margin-top: 1em">ookread gives
-back a <i>struct&nbsp;ookfile</i>, which is used in
-basically all other Ook function calls. It allows only read
-access to a file.</p>
+is the primitive type of the data; Ook uses this and
+<I>components</I>
 
-<p style="margin-left:11%; margin-top: 1em">The
-<i>interface</i> option gives the IO interface to use; see
-<b>io-interface(7).</b> <i>filename</i> is the filename to
-read. The number of voxels in the dataset must be given in
-<i>voxels</i>. <i>bricksize</i> is the desired size of the
-bricks in the volume. Note this must make sense for the
-given volume; one cannot have larger bricks than the volume
-itself. <i>type</i> is the primitive type of the data; Ook
-uses this and <i>components</i> to figure out how big each
-element is.</p>
+to figure out how big each element is.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>RETURN VALUE</H2>
 
-<h2>RETURN VALUE
-<a name="RETURN VALUE"></a>
-</h2>
+On success,
+<B>ookread</B>()
 
+returns a pointer to an opaque structure describing the file.  On
+error, NULL is returned and
+<I>errno</I>
 
-<p style="margin-left:11%; margin-top: 1em">On success,
-<b>ookread</b>() returns a pointer to an opaque structure
-describing the file. On error, NULL is returned and
-<i>errno</i> is set appropriately.</p>
+is set appropriately.
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<H2>ERRORS</H2>
 
-<h2>ERRORS
-<a name="ERRORS"></a>
-</h2>
+In general, an exhaustive listing is impossible;
+<B>ookread</B>()
 
+can fail for any of the reasons that
+<I>interface</I>'s
 
-<p style="margin-left:11%; margin-top: 1em">In general, an
-exhaustive listing is impossible; <b>ookread</b>() can fail
-for any of the reasons that <i>interface</i>&rsquo;s
-<i>open</i> method can fail.</p>
+<I>open</I>
 
-<table width="100%" border="0" rules="none" frame="void"
-       cellspacing="0" cellpadding="0">
-<tr valign="top" align="left">
-<td width="11%"></td>
-<td width="9%">
+method can fail.
+<DL COMPACT>
+<DT><B>EINVAL</B>
 
+<DD>
+Brick size is larger than volume size.
+<DT><B>ENOMEM</B>
 
-<p><b>EINVAL</b></p></td>
-<td width="2%"></td>
-<td width="72%">
+<DD>
+No memory available to create opaque structure.
+<P>
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
 
+<P>
+<B><A HREF="/man/io-interface.7.html">io-interface</A></B>(7),
 
-<p>Brick size is larger than volume size.</p></td>
-<td width="6%">
-</td></tr>
-<tr valign="top" align="left">
-<td width="11%"></td>
-<td width="9%">
+<B><A HREF="/man/ookcreate.3.html">ookcreate</A></B>(3)
 
+<P>
 
-<p><b>ENOMEM</b></p></td>
-<td width="2%"></td>
-<td width="72%">
-
-
-<p>No memory available to create opaque structure.</p></td>
-<td width="6%">
-</td></tr>
-</table>
-
-<h2>SEE ALSO
-<a name="SEE ALSO"></a>
-</h2>
-
-
-
-<p style="margin-left:11%; margin-top: 1em"><b>io-interface</b>(7),
-<b>ookcreate</b>(3)</p>
-<hr>
-</body>
-</html>
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">RETURN VALUE</A><DD>
+<DT><A HREF="#lbAF">ERRORS</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://tfogal.github.io/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 02:54:01 GMT, October 08, 2013
+</BODY>
+</HTML>

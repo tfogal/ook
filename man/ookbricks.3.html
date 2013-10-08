@@ -1,92 +1,74 @@
-<!-- Creator     : groff version 1.22.1 -->
-<!-- CreationDate: Sun Oct  6 15:23:00 2013 -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta name="generator" content="groff -Thtml, see www.gnu.org">
-<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
-<meta name="Content-Style" content="text/css">
-<style type="text/css">
-       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       h1      { text-align: center }
-</style>
-<title>OOKBRICKS</title>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of OOKBRICKS</TITLE>
+</HEAD><BODY>
+<H1>OOKBRICKS</H1>
+Section: Ook Programmer's Manual (3)<BR>Updated: 2013-10-03<BR><A HREF="#index">Index</A>
+<A HREF="../index.html">Return to Main Contents</A><HR>
 
-</head>
-<body>
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
 
-<h1 align="center">OOKBRICKS</h1>
+ookbricks - reports the total number of bricks in a dataset
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
 
-<a href="#NAME">NAME</a><br>
-<a href="#SYNOPSIS">SYNOPSIS</a><br>
-<a href="#DESCRIPTION">DESCRIPTION</a><br>
-<a href="#RETURN VALUE">RETURN VALUE</a><br>
-<a href="#ERRORS">ERRORS</a><br>
-<a href="#SEE ALSO">SEE ALSO</a><br>
+<PRE>
+<B>#include &lt;<A HREF="file:///usr/include/ook.h">ook.h</A>&gt;</B>
 
-<hr>
+<B>size_t ookbricks(const struct ookfile* </B><I>of</I><B>);</B>
+</PRE>
 
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
 
-<h2>NAME
-<a name="NAME"></a>
-</h2>
+<P>
 
+<B>ookbricks</B>()
 
-<p style="margin-left:11%; margin-top: 1em">ookbricks
-&minus; reports the total number of bricks in a dataset</p>
+reports the total number of bricks in a dataset.  This is a simple calculation
+based on the total number of voxels and the brick size, but Ook it can be nice
+to only need to pass around the
+<I>struct&nbsp;ookfile</I>
 
-<h2>SYNOPSIS
-<a name="SYNOPSIS"></a>
-</h2>
+and query metadata as needed.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>RETURN VALUE</H2>
 
+<B>ookbricks</B>()
 
-<p style="margin-left:11%; margin-top: 1em"><b>#include
-&lt;ook.h&gt;</b></p>
+returns the total number of bricks in a dataset.
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<H2>ERRORS</H2>
 
-<p style="margin-left:11%; margin-top: 1em"><b>size_t
-ookbricks(const struct ookfile*</b> <i>of</i><b>);</b></p>
+No errors are defined.
+<P>
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
 
-<h2>DESCRIPTION
-<a name="DESCRIPTION"></a>
-</h2>
+<P>
+<B><A HREF="/man/ookread.3.html">ookread</A></B>(3),
 
+<B><A HREF="/man/ookcreate.3.html">ookcreate</A></B>(3)
 
+<P>
 
-<p style="margin-left:11%; margin-top: 1em"><b>ookbricks</b>()
-reports the total number of bricks in a dataset. This is a
-simple calculation based on the total number of voxels and
-the brick size, but Ook it can be nice to only need to pass
-around the <i>struct&nbsp;ookfile</i> and query metadata as
-needed.</p>
-
-<h2>RETURN VALUE
-<a name="RETURN VALUE"></a>
-</h2>
-
-
-
-<p style="margin-left:11%; margin-top: 1em"><b>ookbricks</b>()
-returns the total number of bricks in a dataset.</p>
-
-<h2>ERRORS
-<a name="ERRORS"></a>
-</h2>
-
-
-<p style="margin-left:11%; margin-top: 1em">No errors are
-defined.</p>
-
-<h2>SEE ALSO
-<a name="SEE ALSO"></a>
-</h2>
-
-
-
-<p style="margin-left:11%; margin-top: 1em"><b>ookread</b>(3),
-<b>ookcreate</b>(3)</p>
-<hr>
-</body>
-</html>
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">RETURN VALUE</A><DD>
+<DT><A HREF="#lbAF">ERRORS</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://tfogal.github.io/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 02:54:01 GMT, October 08, 2013
+</BODY>
+</HTML>

@@ -1,152 +1,149 @@
-<!-- Creator     : groff version 1.22.1 -->
-<!-- CreationDate: Sun Oct  6 15:23:00 2013 -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta name="generator" content="groff -Thtml, see www.gnu.org">
-<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
-<meta name="Content-Style" content="text/css">
-<style type="text/css">
-       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
-       h1      { text-align: center }
-</style>
-<title>OOKCREATE</title>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of OOKCREATE</TITLE>
+</HEAD><BODY>
+<H1>OOKCREATE</H1>
+Section: Ook Programmer's Manual (3)<BR>Updated: 2013-10-03<BR><A HREF="#index">Index</A>
+<A HREF="../index.html">Return to Main Contents</A><HR>
 
-</head>
-<body>
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
 
-<h1 align="center">OOKCREATE</h1>
+ookcreate - create a file to store a dataset in.
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
 
-<a href="#NAME">NAME</a><br>
-<a href="#SYNOPSIS">SYNOPSIS</a><br>
-<a href="#DESCRIPTION">DESCRIPTION</a><br>
-<a href="#RETURN VALUE">RETURN VALUE</a><br>
-<a href="#ERRORS">ERRORS</a><br>
-<a href="#SEE ALSO">SEE ALSO</a><br>
+<PRE>
+<B>#include &lt;<A HREF="file:///usr/include/ook.h">ook.h</A>&gt;</B>
 
-<hr>
+<B>struct ookfile* ookcreate(struct io </B><I>interface</I><B>, const char* </B><I>filename</I>
+<B>                          const uint64_t </B><I>dims</I><B>[3], </B>
+<B>                          const size_t </B><I>bsize</I><B>[3], </B>
+<B>                          enum OOKTYPE </B><I>type</I><B>, size_t </B><I>components</I><B>);</B>
+</PRE>
 
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
 
-<h2>NAME
-<a name="NAME"></a>
-</h2>
+<P>
 
+ookcreate returns a
+<I>struct&nbsp;ookfile</I>,
 
-<p style="margin-left:11%; margin-top: 1em">ookcreate
-&minus; create a file to store a dataset in.</p>
+which is used in basically all other Ook function calls.  It allows read and
+write access to a file.
+<P>
 
-<h2>SYNOPSIS
-<a name="SYNOPSIS"></a>
-</h2>
+The file is created by the call to
+<B>ookcreate</B>().
 
+<B>Note</B>
 
-<p style="margin-left:11%; margin-top: 1em"><b>#include
-&lt;ook.h&gt;</b></p>
+that the file will be truncated when opened!  Ook does not currently support
+switching between reading and writing for a given file.  However, client code
+may perform these in phases: e.g. all writing, then all reading, then close the
+file.
+<P>
 
-<p style="margin-left:11%; margin-top: 1em"><b>struct
-ookfile* ookcreate(struct io</b> <i>interface</i><b>, const
-char*</b> <i>filename</i> <b><br>
-const uint64_t</b> <i>dims</i><b>[3], <br>
-const size_t</b> <i>bsize</i><b>[3], <br>
-enum OOKTYPE</b> <i>type</i><b>, size_t</b>
-<i>components</i><b>);</b></p>
+The 
+<I>interface</I>
 
-<h2>DESCRIPTION
-<a name="DESCRIPTION"></a>
-</h2>
+option gives the IO interface to use; see
+<B><A HREF="/man/io-interface.7.html">io-interface</A>(7).</B>
 
+<I>filename</I>
 
-<p style="margin-left:11%; margin-top: 1em">ookcreate
-returns a <i>struct&nbsp;ookfile</i>, which is used in
-basically all other Ook function calls. It allows read and
-write access to a file.</p>
+is the filename to read.  The desired number of voxels in the dataset must be
+given in
+<I>voxels</I>.
 
-<p style="margin-left:11%; margin-top: 1em">The file is
-created by the call to <b>ookcreate</b>(). <b>Note</b> that
-the file will be truncated when opened! Ook does not
-currently support switching between reading and writing for
-a given file. However, client code may perform these in
-phases: e.g. all writing, then all reading, then close the
-file.</p>
+<I>bsize</I>
 
-<p style="margin-left:11%; margin-top: 1em">The
-<i>interface</i> option gives the IO interface to use; see
-<b>io-interface(7).</b> <i>filename</i> is the filename to
-read. The desired number of voxels in the dataset must be
-given in <i>voxels</i>. <i>bsize</i> is the desired size of
-the bricks in the volume. Note this must make sense for the
-given volume; one cannot have larger bricks than the volume
-itself. <i>type</i> is the primitive type of the data; Ook
-uses this and <i>components</i> to figure out how big each
-element is.</p>
+is the desired size of the bricks in the volume.  Note this must make sense for
+the given volume; one cannot have larger bricks than the volume itself.
+<I>type</I>
 
-<p style="margin-left:11%; margin-top: 1em">The Ook
-interface provides a bricked dataset, but the file this API
-creates is <i>not</i> bricked. By default, the created file
-will be a raw linear array with the X dimension changing
-fastest and the Z dimension changing slowest (i.e. the
-standard C array ordering). The <b>io-interface(7)</b> can
-alter this layout, of course.</p>
+is the primitive type of the data; Ook uses this and
+<I>components</I>
 
-<h2>RETURN VALUE
-<a name="RETURN VALUE"></a>
-</h2>
+to figure out how big each element is.
+<P>
 
+The Ook interface provides a bricked dataset, but the file this API creates is
+<I>not</I>
 
-<p style="margin-left:11%; margin-top: 1em">On success,
-<b>ookcreate</b>() returns a pointer to an opaque structure
-describing the file. On error, NULL is returned and
-<i>errno</i> is set appropriately.</p>
+bricked.  By default, the created file will be a raw linear array with the X
+dimension
+changing fastest and the Z dimension changing slowest (i.e. the standard C
+array ordering).  The
+<B><A HREF="/man/io-interface.7.html">io-interface</A>(7)</B>
 
-<h2>ERRORS
-<a name="ERRORS"></a>
-</h2>
+can alter this layout, of course.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>RETURN VALUE</H2>
 
+On success,
+<B>ookcreate</B>()
 
-<p style="margin-left:11%; margin-top: 1em">In general, an
-exhaustive listing is impossible; <b>ookcreate</b>() can
-fail for any of the reasons that <i>interface</i>&rsquo;s
-<i>open</i> method can fail. Errors specific to
-<b>ookcreate</b>() are listed here.</p>
+returns a pointer to an opaque structure describing the file.  On
+error, NULL is returned and
+<I>errno</I>
 
-<table width="100%" border="0" rules="none" frame="void"
-       cellspacing="0" cellpadding="0">
-<tr valign="top" align="left">
-<td width="11%"></td>
-<td width="9%">
+is set appropriately.
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<H2>ERRORS</H2>
 
+In general, an exhaustive listing is impossible;
+<B>ookcreate</B>()
 
-<p><b>EINVAL</b></p></td>
-<td width="2%"></td>
-<td width="78%">
+can fail for any of the reasons that
+<I>interface</I>'s
 
+<I>open</I>
 
-<p>Brick size is larger than volume size, or
-<i>filename</i> was invalid.</p></td></tr>
-<tr valign="top" align="left">
-<td width="11%"></td>
-<td width="9%">
+method can fail.  Errors specific to
+<B>ookcreate</B>()
 
+are listed here.
+<DL COMPACT>
+<DT><B>EINVAL</B>
 
-<p><b>ENOMEM</b></p></td>
-<td width="2%"></td>
-<td width="78%">
+<DD>
+Brick size is larger than volume size, or
+<I>filename</I>
 
+was invalid.
+<DT><B>ENOMEM</B>
 
-<p>No memory available to create opaque structure.</p></td></tr>
-</table>
+<DD>
+No memory available to create opaque structure.
+<P>
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
 
-<h2>SEE ALSO
-<a name="SEE ALSO"></a>
-</h2>
+<P>
+<B><A HREF="/man/io-interface.7.html">io-interface</A></B>(7),
 
+<B><A HREF="/man/ookread.3.html">ookread</A></B>(3)
 
+<P>
 
-<p style="margin-left:11%; margin-top: 1em"><b>io-interface</b>(7),
-<b>ookread</b>(3)</p>
-<hr>
-</body>
-</html>
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">RETURN VALUE</A><DD>
+<DT><A HREF="#lbAF">ERRORS</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://tfogal.github.io/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 02:54:01 GMT, October 08, 2013
+</BODY>
+</HTML>
