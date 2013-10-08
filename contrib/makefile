@@ -4,14 +4,14 @@ VIPS_LD:=$(shell pkg-config --libs vips-7.28)
 CFLAGS=-std=c99 -ggdb $(WARN) -I../ $(VIPS_CF)
 LIBS:=../libook.so $(VIPS_LD)
 LDFLAGS:=
-OBJ:=carr.o cp.o imgio.o minmax.o stack.o
+OBJ:=carr.o chain2.o cp.o debugio.o imgio.o minmax.o stack.o
 
 all: $(OBJ) ../libook.so icopy iminmax
 
 icopy: carr.o cp.o imgio.o stack.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
-iminmax: minmax.o imgio.o
+iminmax: chain2.o debugio.o minmax.o imgio.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
 ../libook.so:

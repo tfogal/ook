@@ -13,8 +13,10 @@
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
-#include "ook.h"
+#include "chain2.h"
+#include "debugio.h"
 #include "imgio.h"
+#include "ook.h"
 
 /* dimensions of the input volume. */
 static uint64_t vol[3] = {0};
@@ -144,10 +146,12 @@ main(int argc, char* const argv[])
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
-  const uint64_t bricksize[3] = { 64, 64, 1 };
+  const uint64_t bricksize[3] = { 64, 64, 64 };
+  struct io* chained = chain2(DebugIO, StdCIO);
 
-  struct ookfile* fin = ookread(ImageIO, input, vol, bricksize, itype, 1);
+  struct ookfile* fin = ookread(*chained, input, vol, bricksize, itype, 1);
   if(!fin) { perror("open"); exit(EXIT_FAILURE); }
+  free(chained);
 
   size_t bsize[3];
   ookmaxbricksize(fin, bsize);
