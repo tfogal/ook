@@ -5,23 +5,29 @@
 #include <string.h>
 #include <vips/vips.h>
 #include "io-interface.h"
+#include "imgio.h"
 
 static int img_close(void*);
 
 static void*
-img_open(const char* fn, const enum OOKMODE mode, struct metadata md)
+img_open(const char* fn, const enum OOKMODE mode, const void* state)
 {
+  if(state == NULL) {
+    errno = EINVAL;
+    return NULL;
+  }
+  const uint64_t* voxels = (const uint64_t*)state;
   const char* access = "rd";
   if(mode == OOK_RDWR) { access = "w"; }
   IMAGE* img = im_open(fn, access);
   if(NULL == img) {
-    errno = -EINVAL;
+    errno = EINVAL;
     return NULL;
   }
-  if(md.voxels[0] != (uint64_t)img->Xsize ||
-     md.voxels[1] != (uint64_t)img->Ysize) {
+  if(voxels[0] != (uint64_t)img->Xsize ||
+     voxels[1] != (uint64_t)img->Ysize) {
     img_close(img);
-    errno = -EINVAL;
+    errno = EINVAL;
     return NULL;
   }
   return img;
@@ -33,7 +39,7 @@ img_read(void* fd, const off_t offset, const size_t len, void* buf)
   IMAGE* img = (IMAGE*)fd;
   REGION* reg = vips_region_new(img);
   if(NULL == reg) {
-    return -ENOMEM;
+    return ENOMEM;
   }
 
   const size_t width = img->Xsize;
@@ -61,5 +67,6 @@ struct io ImageIO = {
   .read = img_read,
   .write = NULL,
   .close = img_close,
-  .preallocate = NULL
+  .preallocate = NULL,
+  .state = NULL
 };

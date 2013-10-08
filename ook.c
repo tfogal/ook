@@ -77,12 +77,7 @@ ookread(struct io iop, const char* fn, const uint64_t voxels[3],
     return NULL;
   }
   of->iop = iop;
-
-  struct metadata md;
-  memcpy(md.voxels, voxels, sizeof(uint64_t)*3);
-  md.components = components;
-  md.width = width(type);
-  of->fd = iop.open(fn, OOK_RDONLY, md);
+  of->fd = iop.open(fn, OOK_RDONLY, of->iop.state);
 
   if(of->fd == NULL) {
     const int err = errno;
@@ -148,11 +143,7 @@ ookcreate(struct io iop, const char* filename,
     return NULL;
   }
   of->iop = iop;
-  struct metadata md;
-  memcpy(md.voxels, dims, sizeof(uint64_t)*3);
-  md.components = components;
-  md.width = width(type);
-  of->fd = iop.open(filename, OOK_RDWR, md);
+  of->fd = iop.open(filename, OOK_RDWR, iop.state);
   if(of->fd == NULL) {
     free(of);
     errno = EINVAL;
@@ -195,7 +186,7 @@ void
 ookwrite(struct ookfile* of, const size_t id, const void* from)
 {
   /* 'srcop' is defined for a 'read' buffer, which doesn't have the same
-   * 'const's: hence the casting. */
+   * "const"s: hence the casting. */
   srcop((rwop*)of->iop.write, of, id, (void*)from);
 }
 

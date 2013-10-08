@@ -17,16 +17,11 @@
 /** The opener interface provides 'open' semantics.
  * It opens the given file in the given mode.  The identifier returned is
  * opaque; it will be given to 'read' interface calls verbatim, and the read
- * interface assumes what 'open' did.
+ * implementation knows/assumes what 'open' returned.
  * @return NULL on failure, identifier on success. */
 /**@{*/
 enum OOKMODE { OOK_RDONLY, OOK_RDWR };
-struct metadata {
-  uint64_t voxels[3];
-  size_t components;
-  size_t width; /* in bytes */
-};
-typedef void* (opener)(const char* fn, const enum OOKMODE, struct metadata);
+typedef void* (opener)(const char* fn, const enum OOKMODE, const void*);
 /**@}*/
 
 /** The reader interface wraps basic 'read' operations.
@@ -36,7 +31,7 @@ typedef void* (opener)(const char* fn, const enum OOKMODE, struct metadata);
  * @param len number of *bytes* to read.
  * @note ook's reader interface is defined to be atomic: it cannot return a
  * partial read (implementations should instead return an error).
- * @returns 0 on success, an error code (l.t. 0) on error. */
+ * @returns 0 on success, an error code on error. */
 typedef int (reader)(void* fd, const off_t offset, const size_t len,
                      void* buf);
 
@@ -47,12 +42,12 @@ typedef int (reader)(void* fd, const off_t offset, const size_t len,
  * @note ook's writer interface is atomic: partial writes are not possible.  if
  *       only a portion of the data are successfully written, an error is
  *       returned (with no way to identify which portion).
- * @returns 0 on success, an error code (l.t. 0) on error. */
+ * @returns 0 on success, an error code on error. */
 typedef int (writer)(void* fd, const off_t offset, const size_t len,
                      const void* buf);
 
 /** The closer interface simply closes something opened by an opener.
- * @returns 0 on success, an error code < 0 on error. */
+ * @returns 0 on success, an error code on error. */
 typedef int (closer)(void* fd);
 
 /** A prealloc function preallocates the given amount of space in the file.
@@ -70,10 +65,8 @@ struct io {
   writer* write;
   closer* close;
   prealloc* preallocate;
+  const void* state;
 };
 extern struct io StdCIO;
-/** The _debug version prints out details of what it does. */
-extern struct io StdCIO_debug;
-extern struct io MappedIO;
 
 #endif

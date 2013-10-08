@@ -10,6 +10,20 @@
 extern "C" {
 #endif
 
+struct metadata {
+  uint64_t voxels[3];
+  size_t components;
+  size_t width; /* in bytes */
+};
+
+/* the 'state' should be set to a pointer to metadata.
+ *  struct metadata md;
+ *  memcpy(md.voxels, voxels, sizeof(uint64_t)*3);
+ *  md.components = components;
+ *  md.width = sizeof(...);
+ *  struct io mystack = StackIO;
+ *  mystack.state = &md;
+ *  struct ookfile* of = ookread(mystack, "file", voxels, ...); */
 extern struct io StackIO;
 
 #ifdef __cplusplus

@@ -144,10 +144,11 @@ main(int argc, char* const argv[])
     size_t bs[3];
     ookbricksize(fin, brick, bs);
     if(ookbrick(fin, brick, data) != 0) {
-      fprintf(stderr, "Failed read.\n"); break;
+      fprintf(stderr, "\rFailed read.\n"); break;
     }
     ookwrite(fout, brick, data);
     printf("\rProcessed brick %5zu / %5zu...", brick, ookbricks(fin));
+    fflush(stdout);
   }
   printf("\n");
 

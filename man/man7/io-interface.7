@@ -6,14 +6,9 @@ io-interface \- overview of how Ook's io-interfaces work
 .B #include <ook.h>
 .sp
 .BI "enum OOKMODE { OOK_RDONLY, OOK_RDWR };"
-.BI "struct metadata {"
-.BI "  uint64_t voxels[3];"
-.BI "  size_t components;"
-.BI "  size_t width;"
-.BI "};"
 .BI "typedef void* (" opener ")(const char* " fn ","
 .BI "                       const enum OOKMODE " mode ","
-.BI "                       struct metadata " md ");"
+.BI "                       const void* " state ");"
 .BI "typedef int (" reader ")(void* " fd ", const off_t " offset ", "
 .BI "                     const size_t " len ", void* " buf ");"
 .BI "typedef int (" writer ")(void* " fd ", const off_t " offset ","
@@ -26,6 +21,7 @@ io-interface \- overview of how Ook's io-interfaces work
 .BI "  writer* write;"
 .BI "  closer* close;"
 .BI "  prealloc* preallocate;"
+.BI "  void* state;"
 .BI "};"
 .BI "extern struct io StdCIO;"
 .fi
@@ -57,12 +53,26 @@ Offsets and lengths in the
 .I io-interface
 always refer to
 .BR bytes ,
-not elements.  During the time of an
+not elements.
+.LP
+When the
 .I opener
-call, the interface is provided with some metadata describing the underlying
-data type.  However, the intent is
-that this is purely for verification and indexing purposes; many interfaces
-will not need to store this information.
+function is called, the final argument is the
+.IR io-interface 's
+.B state
+member.  Many interfaces do not require state, and should therefore ignore this
+parameter.  Note that the
+.B state
+parameter is only given to the
+.I opener
+function; if the implementation requires state information during other
+operations (e.g. in
+.IR reader ),
+then it should copy the information from the
+.B state
+variable into whatever memory it returns from the
+.I opener
+call.
 
 .SH FUNCTIONS
 .LP
@@ -216,9 +226,9 @@ IO functions.
 #include "io-interface.h"
 
 static void*
-stdc_open(const char* fn, const enum OOKMODE mode, struct metadata md)
+stdc_open(const char* fn, const enum OOKMODE mode, const void* state)
 {
-  (void) md;
+  (void) state;
   const char* access = "rb";
   if(mode == OOK_RDWR) { access = "wb"; }
   FILE* fp = fopen(fn, access);
