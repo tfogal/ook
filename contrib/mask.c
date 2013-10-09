@@ -7,6 +7,7 @@
  *          mask has 0 for 'off' or 'remove' and non-zero for 'keep'. */
 #define _POSIX_C_SOURCE 200112L
 #include <assert.h>
+#include <errno.h>
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -14,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include "chain2.h"
 #include "debugio.h"
@@ -39,6 +42,7 @@ static char* tjfstrdup(const char* str);
 /* identifies the appropriate ook type from a string representation of it. */
 static enum OOKTYPE strtotype(const char*);
 static size_t bytewidth(const enum OOKTYPE);
+static off_t filesize(const char*);
 
 static void
 usage(const char* progname)
@@ -159,6 +163,22 @@ main(int argc, char* const argv[])
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
+  const off_t in_expect_size = vol[0]*vol[1]*vol[2] * bytewidth(itype);
+  const off_t mask_expect_size = vol[0]*vol[1]*vol[2] * sizeof(uint8_t);
+  if(filesize(input) < in_expect_size) {
+    fprintf(stderr, "Input file is not big enough... something is wrong.\n");
+    exit(EXIT_FAILURE);
+  } else if(filesize(input) > in_expect_size) {
+    fprintf(stderr, "Input is bigger than it needs to be... strange, but "
+            "I'll let it slide for now.\n");
+  }
+  if(filesize(mask) < mask_expect_size) {
+    fprintf(stderr, "Mask file is not big enough; something is amiss.\n");
+    exit(EXIT_FAILURE);
+  } else if(filesize(mask) > mask_expect_size) {
+    fprintf(stderr, "Mask is bigger than it needs to be... you are likely to "
+            "be eaten by a grue.\n");
+  }
   const uint64_t bricksize[3] = { vol[0], 16, 16 };
 
   struct ookfile* fin = ookread(StdCIO, input, vol, bricksize, itype, 1);
@@ -262,7 +282,7 @@ strtotype(const char* str)
     fprintf(stderr, "Invalid type '%s'\n", str);
     exit(EXIT_FAILURE);
   }
-	assert(false);
+  assert(false);
   return OOK_I8;
 }
 
@@ -279,4 +299,15 @@ bytewidth(const enum OOKTYPE basictype)
   }
   assert(false);
   return 0;
+}
+
+static off_t
+filesize(const char* fn)
+{
+  struct stat buf;
+  if(stat(fn, &buf) != 0) {
+    fprintf(stderr, "could not stat %s: %d\n", fn, errno);
+    exit(EXIT_FAILURE);
+  }
+  return buf.st_size;
 }
