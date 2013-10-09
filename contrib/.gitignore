@@ -1,2 +1,4 @@
-icopy
-iminmax
+ocopy
+ominmax
+ocast8
+omask
