@@ -149,7 +149,7 @@ main(int argc, char* const argv[])
   const uint64_t bricksize[3] = { 64, 64, 64 };
   struct io* chained = chain2(DebugIO, StdCIO);
 
-  struct ookfile* fin = ookread(*chained, input, vol, bricksize, itype, 1);
+  struct ookfile* fin = ookread(StdCIO, input, vol, bricksize, itype, 1);
   if(!fin) { perror("open"); exit(EXIT_FAILURE); }
   free(chained);
 
@@ -181,7 +181,8 @@ main(int argc, char* const argv[])
     assert(bs[0] > 0 && bs[1] > 0 && bs[2] > 0);
     ookbrick(fin, brick, data);
     fqn(data, minmax, bs[0]*bs[1]*bs[2]);
-    printf("\rProcessed brick %5zu / %5zu...", brick, ookbricks(fin));
+    printf("\rProcessed brick %5zu / %5zu... [%lf--%lf]", brick,
+           ookbricks(fin), minmax[0], minmax[1]);
   }
   printf("\n");
   printf("Data range: %lf--%lf\n", minmax[0], minmax[1]);
