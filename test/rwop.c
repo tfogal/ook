@@ -20,6 +20,7 @@ static struct ookfile* zeroes;
 static const char* simplefile = ".testing";
 static const char* multifile = ".testing-multicomponent";
 static const char* towrite = ".simple-writetest";
+static const char* thirty = ".30";
 static struct ookfile* of;
 
 static void
@@ -428,6 +429,48 @@ START_TEST(writer_basic)
 }
 END_TEST
 
+static void
+setup_30()
+{
+  ck_assert(ookinit());
+  FILE* fp = fopen(thirty, "wb");
+  ck_assert(fp != NULL);
+  for(size_t i=0; i < 30; ++i) {
+    float f = (float)i;
+    fwrite(&f, sizeof(float), 1, fp);
+  }
+  fclose(fp);
+
+  const uint64_t vol[3] = {15, 2, 1};
+  const size_t bsize[3] = {8, 2, 1};
+  const size_t components = 1;
+  of = ookread(StdCIO, thirty, vol, bsize, OOK_FLOAT, components);
+  tjf_ck_ptr_ne(of, NULL);
+}
+
+static void
+teardown_30()
+{
+  ookclose(of);
+  of = NULL; /* force memory being unreachable (for leak checking) */
+  remove(thirty);
+}
+
+START_TEST(lbrick_size)
+{
+  size_t bsize[3];
+  ookbricksize(of, 1, bsize);
+  ck_assert_int_eq(bsize[0], 7);
+  ck_assert_int_eq(bsize[1], 2);
+  ck_assert_int_eq(bsize[2], 1);
+  size_t bid[3] = {1, 0, 0};
+  ookbricksize3(of, bid, bsize);
+  ck_assert_int_eq(bsize[0], 7);
+  ck_assert_int_eq(bsize[1], 2);
+  ck_assert_int_eq(bsize[2], 1);
+}
+END_TEST
+
 Suite*
 rwop_suite()
 {
@@ -444,14 +487,18 @@ rwop_suite()
   tcase_add_test(writer, writer_threshold);
   TCase* multicomp = tcase_create("multicomp");
   tcase_add_test(multicomp, multicomp_read);
+  TCase* lastbrick = tcase_create("lastbrick");
+  tcase_add_test(lastbrick, lbrick_size);
 
   tcase_add_checked_fixture(zero, setup_zero, teardown_zero);
   tcase_add_checked_fixture(simple, setup_simple, teardown_simple);
   tcase_add_checked_fixture(multicomp, setup_multicomp, teardown_multicomp);
   tcase_add_checked_fixture(writer, setup_writer, teardown_writer);
+  tcase_add_checked_fixture(lastbrick, setup_30, teardown_30);
   suite_add_tcase(s, zero);
   suite_add_tcase(s, simple);
   suite_add_tcase(s, multicomp);
   suite_add_tcase(s, writer);
+  suite_add_tcase(s, lastbrick);
   return s;
 }

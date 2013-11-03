@@ -1,6 +1,6 @@
 {
   global: ookinit; ookread; ookbricks; ookmaxbricksize; ookbrick;
           ookdimensions; ookcreate; ookbricksize; ookwrite; ookclose; StdCIO;
-          StdCIO_debug;
+          StdCIO_debug; ookbrick3; ookbricksize3;
   local: *;
 };

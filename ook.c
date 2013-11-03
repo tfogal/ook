@@ -117,6 +117,21 @@ ookbrick(const struct ookfile* of, size_t id, void* target)
   return errno;
 }
 
+/* copies data for the given brick into 'data'. */
+int
+ookbrick3(const struct ookfile* of, const size_t id[3], void* data)
+{
+  errno = 0;
+  /* Somewhat humorously, 'srcop' needs the 1D index---which it just goes and
+   * converts to a 3D index anyway.  To satisfy the interface, for now, we just
+   * convert 3D to 1D and let 'srcop' convert it back. */
+  size_t layout[3];
+  blayout(of, layout);
+  const size_t bid = id[2]*layout[0]*layout[1] + id[1]*layout[0] + id[0];
+  srcop(of->iop.read, of, bid, data);
+  return errno;
+}
+
 void
 ookdimensions(const struct ookfile* of, uint64_t voxels[3])
 {
@@ -161,6 +176,10 @@ ookcreate(struct io iop, const char* filename,
   return of;
 }
 
+/* size of a brick, per-dimension.
+ * basically we assume it is the global brick size, but calculate if the brick
+ * is at the edge of the domain.  if it is, then we only give the 'remainder'
+ * number of voxels. */
 void
 ookbricksize(const struct ookfile* of, const size_t id, size_t bsize[3])
 {
@@ -174,6 +193,27 @@ ookbricksize(const struct ookfile* of, const size_t id, size_t bsize[3])
   blayout(of, layout);
   size_t bid[3];
   bidxto3d(id, layout, bid);
+  memcpy(bsize, of->bricksize, sizeof(size_t)*3);
+  for(size_t i=0; i < 3; ++i) {
+		if(bid[i] == nbricks[i]) {
+			bsize[i] = of->volsize[i] % of->bricksize[i];
+		}
+  }
+}
+
+void
+ookbricksize3(const struct ookfile* of, const size_t bid[3], size_t bsize[3])
+{
+  if(of == NULL) { errno = EINVAL; return; }
+  const double nbricks[3] = {
+    of->volsize[0] / of->bricksize[0],
+    of->volsize[1] / of->bricksize[1],
+    of->volsize[2] / of->bricksize[2]
+  };
+  if(bid[0] > nbricks[0] || bid[1] > nbricks[1] || bid[2] > nbricks[2]) {
+    errno = EINVAL;
+    return;
+  }
   memcpy(bsize, of->bricksize, sizeof(size_t)*3);
   for(size_t i=0; i < 3; ++i) {
 		if(bid[i] == nbricks[i]) {

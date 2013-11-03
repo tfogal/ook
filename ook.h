@@ -27,6 +27,7 @@ size_t ookbricks(const struct ookfile*);
 void ookmaxbricksize(const struct ookfile*, size_t[3]);
 
 int ookbrick(const struct ookfile*, size_t id, void* data);
+int ookbrick3(const struct ookfile*, const size_t id[3], void* data);
 void ookdimensions(const struct ookfile*, uint64_t[3]);
 
 struct ookfile*
@@ -35,6 +36,7 @@ ookcreate(struct io, const char* filename,
           enum OOKTYPE, size_t components);
 
 void ookbricksize(const struct ookfile*, const size_t id, size_t bsize[3]);
+void ookbricksize3(const struct ookfile*, const size_t id[3], size_t bsize[3]);
 void ookwrite(struct ookfile*, const size_t id, const void*);
 
 int ookclose(struct ookfile*);
