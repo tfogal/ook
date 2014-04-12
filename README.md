@@ -15,18 +15,4 @@ memory for a single brick.
 Ook essentially provides the illusion that your data set is already
 stored as bricks.
 
-What Ook is Not
----------------
-
-Ook *only* provides a contiguous, bricked view of a data set.  This
-means it may lack some features you desire.  You'll have to provide
-them yourself.
-
-Here are some related ideas which are out of scope for Ook:
-
- - multiresolution.
- - file format abstraction.  Ook does not know about file formats.
- - memory handling.  Ook provides the tool; wield it how you will.
- - metadata handling
- - high-dimensional data.  Ook deals with 3D data only, though you can
-   hack lower dimensions with a ``1``-sized dimension.
+More info: http://tfogal.github.io/ook/
