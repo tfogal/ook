@@ -16,7 +16,7 @@ ookcopy: copy.o libook.so
 	$(CC) $^ -o $@ $(LDFLAGS) $(LIBS)
 
 libook.so: ook.o stdcio.o
-	$(CC) -fPIC -shared -Wl,--version-script=symbols.map $^ -o $@ $(LIBS)
+	$(CC) -fPIC -shared -Wl $^ -o $@ $(LIBS)
 	@#$(CC) -fPIC -shared $^ -o $@ $(LIBS)
 
 clean:
