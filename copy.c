@@ -112,7 +112,7 @@ main(int argc, char* const argv[])
     fprintf(stderr, "Initialization failed.\n");
     exit(EXIT_FAILURE);
   }
-  const uint64_t bricksize[3] = { 64, 64, 64 };
+  const size_t bricksize[3] = { 64, 64, 64 };
 
   struct ookfile* fin = ookread(StdCIO, input, vol, bricksize, itype, 1);
   if(!fin) { perror("open"); exit(EXIT_FAILURE); }

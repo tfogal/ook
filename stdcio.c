@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +44,9 @@ stdc_read(void* fd, const off_t offset, const size_t len, void* buf)
 static int
 stdc_read_dbg(void* fd, const off_t offset, const size_t len, void* buf)
 {
-  fprintf(stderr, "[ook] reading %zu bytes at %ld from %p\n", len, offset, fd);
+  assert(offset >= 0);
+  fprintf(stderr, "[ook] reading %zu bytes at %jd from %p\n", len,
+          (intmax_t)offset, fd);
   return stdc_read(fd, offset, len, buf);
 }
 
@@ -63,7 +66,9 @@ stdc_write(void* fd, const off_t offset, const size_t len, const void* buf)
 static int
 stdc_write_dbg(void* fd, const off_t offset, const size_t len, const void* buf)
 {
-  fprintf(stderr, "[ook] writing %zu bytes at %ld into %p\n", len, offset, fd);
+  assert(offset >= 0);
+  fprintf(stderr, "[ook] writing %zu bytes at %jd into %p\n", len,
+          (intmax_t)offset, fd);
   return stdc_write(fd, offset, len, buf);
 }
 

@@ -226,7 +226,7 @@ main(int argc, char* const argv[])
     exit(EXIT_FAILURE);
   }
   const uint64_t volumesize[3] = { 2025, 1600, 400 };
-  const uint64_t bricksize[3] = { 405, 320, 80 };
+  const size_t bricksize[3] = { 405, 320, 80 };
 
   struct ookfile* f1 = ookread(StdCIO, input[0], volumesize, bricksize,
                                OOK_U16, 1);

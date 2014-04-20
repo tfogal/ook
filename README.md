@@ -1,6 +1,8 @@
 Introduction
 ============
 
+[![Build Status](https://travis-ci.org/tfogal/ook.png)](https://travis-ci.org/tfogal/ook)
+
 This is ook, a simple library for providing bricked versions of a dataset.
 
 `Bricking' is the term we use in some visualization subfields to refer
