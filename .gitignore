@@ -1,5 +1,6 @@
 *.o
 libook.so
+libook.dylib
 ooksample
 ookthreshold
 ookcopy
