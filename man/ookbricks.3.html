@@ -27,11 +27,8 @@ ookbricks - reports the total number of bricks in a dataset
 <B>ookbricks</B>()
 
 reports the total number of bricks in a dataset.  This is a simple calculation
-based on the total number of voxels and the brick size, but Ook it can be nice
-to only need to pass around the
-<I>struct&nbsp;ookfile</I>
-
-and query metadata as needed.
+based on the total number of voxels and the brick size, but this is provided
+for convenience nonetheless.
 <P>
 <A NAME="lbAE">&nbsp;</A>
 <H2>RETURN VALUE</H2>
@@ -43,8 +40,18 @@ returns the total number of bricks in a dataset.
 <A NAME="lbAF">&nbsp;</A>
 <H2>ERRORS</H2>
 
-No errors are defined.
+<DL COMPACT>
+<DT><B>EINVAL</B>
+
+<DD>
+The given
+<I>of</I>
+
+pointer does not point to a valid
+<I>struct&nbsp;ookfile</I>
+
 <P>
+</DL>
 <A NAME="lbAG">&nbsp;</A>
 <H2>SEE ALSO</H2>
 
