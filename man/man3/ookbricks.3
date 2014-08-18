@@ -12,17 +12,21 @@ ookbricks \- reports the total number of bricks in a dataset
 .LP
 .BR ookbricks ()
 reports the total number of bricks in a dataset.  This is a simple calculation
-based on the total number of voxels and the brick size, but Ook it can be nice
-to only need to pass around the
-.IR struct\ ookfile
-and query metadata as needed.
+based on the total number of voxels and the brick size, but this is provided
+for convenience nonetheless.
 
 .SH "RETURN VALUE"
 .BR ookbricks ()
 returns the total number of bricks in a dataset.
 
 .SH ERRORS
-No errors are defined.
+.TP
+.B EINVAL
+The given
+.IR of
+pointer does not point to a valid
+.I struct\ ookfile
+.
 
 .SH "SEE ALSO"
 
