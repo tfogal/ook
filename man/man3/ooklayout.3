@@ -1,0 +1,34 @@
+.TH OOKLAYOUT 2013-10-03 "" "Ook Programmer's Manual"
+.SH NAME
+ooklayout \- reports the number of bricks in the data set, per dimension.
+.SH SYNOPSIS
+.nf
+.B #include <ook.h>
+.sp
+.BI "void ookbricks(const struct ookfile* " of ", size_t " layout "[3]);"
+.fi
+
+.SH DESCRIPTION
+.LP
+.BR ooklayout ()
+reports the number of bricks in a dataset, per dimension.  An ook dataset
+always has at least one brick in each dimension.
+
+.SH "RETURN VALUE"
+.BR ooklayout ()
+technically has no return value.  The 
+.I layout
+parameter is filled with the number of bricks.
+
+.SH ERRORS
+.TP
+.B EINVAL
+The given
+.IR of
+pointer does not point to a valid
+.I struct\ ookfile
+
+.SH "SEE ALSO"
+
+.BR ookread (3),
+.BR ookcreate (3)
