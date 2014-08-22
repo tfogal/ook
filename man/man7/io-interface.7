@@ -233,10 +233,10 @@ stdc_open(const char* fn, const enum OOKMODE mode, const void* state)
   if(mode == OOK_RDWR) { access = "wb"; }
   FILE* fp = fopen(fn, access);
 
-	if(NULL == fp) {
+  if(NULL == fp) {
     errno = -EINVAL;
     return NULL;
-	}
+  }
   return fp;
 }
 
