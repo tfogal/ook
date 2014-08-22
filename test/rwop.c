@@ -295,6 +295,16 @@ START_TEST(simple_verify)
 }
 END_TEST
 
+START_TEST(simple_layout)
+{
+  size_t layout[3];
+  ooklayout(of, layout);
+  ck_assert_int_eq(layout[0], 2);
+  ck_assert_int_eq(layout[1], 2);
+  ck_assert_int_eq(layout[2], 1);
+}
+END_TEST
+
 static void
 setup_writer()
 {
@@ -481,6 +491,7 @@ rwop_suite()
   tcase_add_test(zero, zero_rw);
   TCase* simple = tcase_create("simple");
   tcase_add_test(simple, simple_verify);
+  tcase_add_test(simple, simple_layout);
   TCase* writer = tcase_create("writer");
   tcase_add_test(writer, writer_nothing);
   tcase_add_test(writer, writer_basic);

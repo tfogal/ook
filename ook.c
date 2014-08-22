@@ -102,6 +102,13 @@ ookbricks(const struct ookfile* ook)
 }
 
 void
+ooklayout(const struct ookfile* of, size_t layout[3])
+{
+  if(of == NULL) { errno = EINVAL; return; }
+  blayout(of, layout);
+}
+
+void
 ookmaxbricksize(const struct ookfile* of, size_t bs[3])
 {
   if(of == NULL) { errno = EINVAL; return; }
