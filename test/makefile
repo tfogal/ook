@@ -1,6 +1,6 @@
 WARN=-Wall -Wextra -Werror
 CFLAGS=-std=c99 -ggdb $(WARN) -I../
-LIBS:=../libook.so -lcheck
+LIBS:=-pthread ../libook.so -lcheck -lm -lrt
 LDFLAGS:=
 OBJ:=bricksize.o check.o rwop.o ../libook.so
 
